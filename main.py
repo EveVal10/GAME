@@ -7,14 +7,17 @@ from intro import show_intro_scenes
 from enemies import Enemy
 
 # Configuración de assets
-BACKGROUND_IMAGE = "assets//screen//background.png"
-BACKGROUND_MUSIC = "assets//audio//menu//EscapeThatFeeling.mp3"
-INTRO_MUSIC = "assets//audio//menu//EscapeThatFeeling.mp3"
-GAME_MUSIC = "assets//audio//menu//EscapeThatFeeling.mp3"
-TMX_MAP_PATH = "assets//tilemaps//level1_1.tmx"
+BACKGROUND_IMAGE = "assets/screen/background.png"
+BACKGROUND_MUSIC = "assets/audio/menu/EscapeThatFeeling.mp3"
+INTRO_MUSIC = "assets/audio/menu/EscapeThatFeeling.mp3"
+GAME_MUSIC = "assets/audio/menu/EscapeThatFeeling.mp3"
+TMX_MAP_PATH = "assets/tilemaps/level1_1.tmx"
+
+LOGO_1 = "assets/logo/logoUTCJ.png"
+LOGO_2 = "assets/logo/logo.png"
 
 def fade_music(new_music, fade_time=2000):
-    """Realiza un fade entre la música actual y la nueva"""
+    """Realiza un fade entre la música actual y la nueva."""
     current_music = pygame.mixer.music.get_busy()
     if current_music:
         current_volume = pygame.mixer.music.get_volume()
@@ -30,6 +33,51 @@ def fade_music(new_music, fade_time=2000):
         pygame.mixer.music.set_volume(volume / 100)
         pygame.time.delay(fade_time // 20)
 
+def show_logo(screen, logo_path, fade_in_time=2000, display_time=4000, fade_out_time=2000):
+    """Muestra un logo con efecto de fade-in y fade-out manteniendo su relación de aspecto."""
+    logo = pygame.image.load(logo_path).convert_alpha()
+
+    # Obtener dimensiones originales del logo
+    original_width, original_height = logo.get_size()
+
+    # Definir un tamaño máximo basado en la resolución de la pantalla
+    max_width = screen.get_width() * 0.6  # 60% del ancho de la pantalla
+    max_height = screen.get_height() * 0.6  # 60% de la altura de la pantalla
+
+    # Calcular el nuevo tamaño manteniendo la relación de aspecto
+    aspect_ratio = original_width / original_height
+    if original_width > max_width or original_height > max_height:
+        if original_width > original_height:
+            new_width = int(max_width)
+            new_height = int(new_width / aspect_ratio)
+        else:
+            new_height = int(max_height)
+            new_width = int(new_height * aspect_ratio)
+    else:
+        new_width, new_height = original_width, original_height  # Mantener tamaño original si es pequeño
+
+    # Redimensionar la imagen sin distorsionarla
+    logo = pygame.transform.scale(logo, (new_width, new_height))
+    rect = logo.get_rect(center=(screen.get_width() // 2, screen.get_height() // 2))
+
+    # Fade in
+    for alpha in range(0, 256, 5):
+        screen.fill((0, 0, 0))
+        logo.set_alpha(alpha)
+        screen.blit(logo, rect)
+        pygame.display.update()
+        pygame.time.delay(fade_in_time // 50)
+
+    pygame.time.delay(display_time)  # Mantener visible
+
+    # Fade out
+    for alpha in range(255, -1, -5):
+        screen.fill((0, 0, 0))
+        logo.set_alpha(alpha)
+        screen.blit(logo, rect)
+        pygame.display.update()
+        pygame.time.delay(fade_out_time // 50)
+
 def main():
     pygame.init()
     
@@ -43,9 +91,9 @@ def main():
     pygame.mixer.music.set_volume(0.5)
     pygame.mixer.music.play(-1)
 
-    # Pantallas iniciales
-    fade_screen(screen, "Feline Moon Studios", 2000, 4000)
-    fade_screen(screen, "Unmei Gisei", 2000, 4000)
+    # Mostrar los dos logos en secuencia
+    show_logo(screen, LOGO_1)
+    show_logo(screen, LOGO_2)
 
     # Menú principal
     background = pygame.transform.scale(
@@ -75,6 +123,10 @@ def main():
         480
     )
 
+    # Dimensiones totales del mapa (para no salirse)
+    map_width = tmx_data.width * tmx_data.tilewidth
+    map_height = tmx_data.height * tmx_data.tileheight
+
     # Jugador
     collision_rects = get_collision_rects(tmx_data)
     player = Player(*get_player_spawn(tmx_data))
@@ -100,9 +152,18 @@ def main():
             if event.type == pygame.QUIT:
                 running = False
 
+        # Detectar entrada del jugador para atacar
+        keys = pygame.key.get_pressed()
+        if keys[pygame.K_e]:  # Tecla "E" para atacar
+            player.attack()
+
         # Actualización de entidades
-        player.update(collision_rects, enemies)
+        # Ahora pasamos map_width y map_height para limitar la posición del jugador
+        player.update(collision_rects, enemies, map_width, map_height)
+
+        # Actualizar cámara en base al rect del jugador
         camera.update(player.rect)
+
         enemies.update(collision_rects)
 
         # Renderizado
@@ -119,8 +180,8 @@ def main():
             screen.blit(enemy.image, camera.apply(enemy.rect))
 
         # Debug de colisiones (opcional)
-        for rect in collision_rects:
-            pygame.draw.rect(screen, (255,0,0), camera.apply(rect), 1)
+        # for rect in collision_rects:
+        #     pygame.draw.rect(screen, (255,0,0), camera.apply(rect), 1)
         
         pygame.display.flip()
         clock.tick(60)
