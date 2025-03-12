@@ -72,10 +72,10 @@ class Player(pygame.sprite.Sprite):
                 frames.append(image)
         return frames if frames else [pygame.Surface((32, 64))]  # Imagen vacía si no hay frames
 
-    def update(self, collision_rects, enemy_group, map_width, map_height):
+    def update(self, collision_rects, enemy_group, map_width, map_height, screen):
         """Lógica principal del jugador, recibiendo el tamaño del mapa para limitar movimiento."""
         if self.dead:
-            self.handle_death()
+            self.handle_death(screen)
             return  # No hacer nada más si está "muerto"
 
         keys = pygame.key.get_pressed()
@@ -111,11 +111,9 @@ class Player(pygame.sprite.Sprite):
             else:
                 self.state = "jump_right"
 
-        # *** Manejar colisión con enemigos para recibir daño ***
-        # En lugar de morir al instante, se le resta salud
+        # Manejar colisión con enemigos para recibir daño
         hits = pygame.sprite.spritecollide(self, enemy_group, False)
         for enemy in hits:
-            # Puedes usar enemy.damage si lo defines en la clase Enemy, o un valor fijo (ej. 10)
             damage = getattr(enemy, "damage", 10)
             self.take_damage(damage)
 
@@ -172,8 +170,6 @@ class Player(pygame.sprite.Sprite):
             return  # No aplicar daño si aún es invulnerable
         """Resta salud y verifica si debe morir."""
         self.health -= amount
-        # Evitar que se reste salud de forma excesiva en una misma colisión
-        # (opcional: implementar invulnerabilidad temporal)
         if self.health <= 0:
             self.health = 0
             self.die()
@@ -181,7 +177,6 @@ class Player(pygame.sprite.Sprite):
     def draw_health_bar(self, surface, camera):
         """Dibuja una barra de salud encima del sprite del jugador.
            Se utiliza la posición ajustada de la cámara."""
-        # Obtener la posición del jugador según la cámara
         applied_rect = camera.apply(self.rect)
         bar_width = self.rect.width
         bar_height = 5
@@ -201,8 +196,8 @@ class Player(pygame.sprite.Sprite):
         self.animation_timer = 0
         self.death_start_time = None
 
-    def handle_death(self):
-        """Maneja la animación de muerte y se queda en el último frame."""
+    def handle_death(self, screen):
+        """Maneja la animación de muerte, muestra el mensaje y reinicia al jugador."""
         if self.current_frame < len(self.animations["death"]) - 1:
             self.animation_timer += 1
             if self.animation_timer >= self.animation_speed * 2:
@@ -214,6 +209,14 @@ class Player(pygame.sprite.Sprite):
             if self.death_start_time is None:
                 self.death_start_time = time.time()
             if time.time() - self.death_start_time >= 5:
+                # Mostrar mensaje "lo siento hermana" con un diseño más pequeño y triste
+                font = pygame.font.Font("freesansbold.ttf", 50)
+                text = font.render("lo lamento, hermana...", True, (100, 100, 150))
+                text_rect = text.get_rect(center=(screen.get_width() // 2, screen.get_height() // 2))
+                screen.fill((0, 0, 0))  # Limpiar pantalla
+                screen.blit(text, text_rect)
+                pygame.display.flip()
+                pygame.time.delay(3000)  # Espera 3 segundos antes de reiniciar
                 self.respawn()
 
     def respawn(self):
