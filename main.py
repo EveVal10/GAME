@@ -173,8 +173,9 @@ def main():
         draw_tiled_map(screen, tmx_data, camera.x, camera.y)
         
         # Dibujar jugador
+        applied_rect = camera.apply(player.rect)
         screen.blit(player.image, camera.apply(player.rect))
-        
+        player.draw_health_bar(screen, camera)
         # Dibujar enemigos
         for enemy in enemies:
             screen.blit(enemy.image, camera.apply(enemy.rect))

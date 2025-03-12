@@ -46,6 +46,12 @@ class Player(pygame.sprite.Sprite):
         self.attack_start_time = None  # Tiempo de inicio del ataque
         self.attack_duration = 0.5  # Duración del ataque en segundos
 
+        # *** NUEVAS PROPIEDADES DE SALUD ***
+        self.max_health = 100
+        self.health = self.max_health
+        self.invulnerability_duration = 1.0
+        self.last_damage_time = 0  # Tiempo en que se recibió el último daño
+
     def load_frames(self, folder, scale_factor=1):
         """Carga y ordena los frames numéricamente."""
         frames = []
@@ -85,7 +91,6 @@ class Player(pygame.sprite.Sprite):
             self.state = "right"
             self.last_direction = "right"
         else:
-            # Cambiar a "idle" solo si no está muerto o atacando
             if not self.dead and not self.attacking:
                 self.state = "idle"
 
@@ -106,28 +111,27 @@ class Player(pygame.sprite.Sprite):
             else:
                 self.state = "jump_right"
 
-        # Verificar colisión con enemigos
-        if pygame.sprite.spritecollideany(self, enemy_group):
-            self.die()
+        # *** Manejar colisión con enemigos para recibir daño ***
+        # En lugar de morir al instante, se le resta salud
+        hits = pygame.sprite.spritecollide(self, enemy_group, False)
+        for enemy in hits:
+            # Puedes usar enemy.damage si lo defines en la clase Enemy, o un valor fijo (ej. 10)
+            damage = getattr(enemy, "damage", 10)
+            self.take_damage(damage)
 
         # Aplicar movimiento horizontal
         self.rect.x += self.velocity_x
         self.handle_collisions(collision_rects, "horizontal")
 
-        # >>> Limitar la posición al tamaño del mapa <<<
-        # Eje X
+        # Limitar la posición al tamaño del mapa
         if self.rect.left < 0:
             self.rect.left = 0
         if self.rect.right > map_width:
             self.rect.right = map_width
-
-        # Eje Y
         if self.rect.top < 0:
             self.rect.top = 0
         if self.rect.bottom > map_height:
             self.rect.bottom = map_height
-            # Si quieres permitir caer y "pararse" en el fondo, puedes hacer on_ground = True
-            # self.on_ground = True
 
         # Actualizar animación
         self.animate()
@@ -162,37 +166,58 @@ class Player(pygame.sprite.Sprite):
             self.current_frame = (self.current_frame + 1) % len(self.animations[self.state])
             self.image = self.animations[self.state][self.current_frame]
 
+    def take_damage(self, amount):
+        current_time = time.time()
+        if current_time - self.last_damage_time < self.invulnerability_duration:
+            return  # No aplicar daño si aún es invulnerable
+        """Resta salud y verifica si debe morir."""
+        self.health -= amount
+        # Evitar que se reste salud de forma excesiva en una misma colisión
+        # (opcional: implementar invulnerabilidad temporal)
+        if self.health <= 0:
+            self.health = 0
+            self.die()
+
+    def draw_health_bar(self, surface, camera):
+        """Dibuja una barra de salud encima del sprite del jugador.
+           Se utiliza la posición ajustada de la cámara."""
+        # Obtener la posición del jugador según la cámara
+        applied_rect = camera.apply(self.rect)
+        bar_width = self.rect.width
+        bar_height = 5
+        bar_x = applied_rect.x
+        bar_y = applied_rect.y - 10  # 10 píxeles por encima del sprite
+        fill_width = int(bar_width * (self.health / self.max_health))
+        # Fondo de la barra (rojo)
+        pygame.draw.rect(surface, (255, 0, 0), (bar_x, bar_y, bar_width, bar_height))
+        # Parte llena (verde)
+        pygame.draw.rect(surface, (0, 255, 0), (bar_x, bar_y, fill_width, bar_height))
+
     def die(self):
         """Mata al jugador y activa la animación de muerte."""
         self.dead = True
         self.state = "death"
         self.current_frame = 0
-        self.animation_timer = 0  # Reiniciar el temporizador de animación
-        self.death_start_time = None  # Reiniciar el temporizador de espera
+        self.animation_timer = 0
+        self.death_start_time = None
 
     def handle_death(self):
         """Maneja la animación de muerte y se queda en el último frame."""
         if self.current_frame < len(self.animations["death"]) - 1:
-            # Avanzar la animación de muerte
             self.animation_timer += 1
-            if self.animation_timer >= self.animation_speed * 2:  # Hacer la animación más lenta
+            if self.animation_timer >= self.animation_speed * 2:
                 self.animation_timer = 0
                 self.current_frame += 1
                 self.image = self.animations["death"][self.current_frame]
         else:
-            # Mantener el último frame
-            self.image = self.animations["death"][-1]  # Usar -1 para el último frame
-
-            # Iniciar temporizador si es la primera vez que se llega aquí
+            self.image = self.animations["death"][-1]
             if self.death_start_time is None:
                 self.death_start_time = time.time()
-
-            # Esperar 5 segundos antes de reaparecer
             if time.time() - self.death_start_time >= 5:
                 self.respawn()
 
     def respawn(self):
-        """Reaparece al jugador en la posición inicial."""
+        """Reaparece al jugador en la posición inicial y restaura la salud."""
         self.rect.topleft = self.start_pos
         self.velocity_x = 0
         self.velocity_y = 0
@@ -200,13 +225,13 @@ class Player(pygame.sprite.Sprite):
         self.dead = False
         self.state = "idle"
         self.current_frame = 0
-        self.death_start_time = None  # Reiniciar el temporizador de muerte
+        self.death_start_time = None
+        self.health = self.max_health
 
     def attack(self):
         """Inicia la animación de ataque."""
-        if not self.attacking:  # Evitar múltiples ataques simultáneos
+        if not self.attacking:
             self.attacking = True
-            # Usar la animación de ataque según la última dirección
             if self.last_direction == "left":
                 self.state = "attack_left"
             else:
@@ -218,15 +243,13 @@ class Player(pygame.sprite.Sprite):
     def handle_attack(self):
         """Maneja la animación de ataque."""
         if self.current_frame < len(self.animations[self.state]) - 1:
-            # Avanzar la animación de ataque
             self.animation_timer += 1
             if self.animation_timer >= self.animation_speed:
                 self.animation_timer = 0
                 self.current_frame += 1
                 self.image = self.animations[self.state][self.current_frame]
         else:
-            # Finalizar el ataque después de la duración
             if time.time() - self.attack_start_time >= self.attack_duration:
                 self.attacking = False
-                self.state = "idle"  # Volver a la animación de idle
+                self.state = "idle"
                 self.current_frame = 0

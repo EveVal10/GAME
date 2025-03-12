@@ -135,7 +135,7 @@
  <objectgroup id="11" name="Enemies">
   <object id="77" name="Wolf" type="enemy" x="1057.15" y="221.091" width="32" height="32">
    <properties>
-    <property name="enemy_health" value="100"/>
+    <property name="enemy_health" type="int" value="100"/>
     <property name="enemy_speed" type="int" value="1"/>
     <property name="enemy_type" value="wolf"/>
    </properties>
