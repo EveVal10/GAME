@@ -58,3 +58,26 @@ def get_enemy_spawns(tmx_data):
                         "health": obj.properties.get("enemy_health", 100)
                     })
     return enemies
+
+def get_consumable_spawns(tmx_data):
+    consumables = []
+    for layer in tmx_data.layers:
+        if isinstance(layer, pytmx.TiledObjectGroup) and layer.name == "Consumables":
+            for obj in layer:
+                if obj.type == "consumable":
+                    consumables.append({
+                        "x": obj.x,
+                        "y": obj.y,
+                        "consumable_type": obj.properties.get("consumable_type", "fish"),
+                        "health_value": obj.properties.get("health_value", 50),
+                        "pickup_sound": obj.properties.get("pickup_sound", None)  # Opcional
+                    })
+    return consumables
+
+def get_level_end(tmx_data):
+    for layer in tmx_data.layers:
+        if isinstance(layer, pytmx.TiledObjectGroup) and layer.name == "LevelEnd":
+            for obj in layer:
+                if obj.name == "LevelEnd":
+                    return pygame.Rect(obj.x, obj.y, obj.width, obj.height)
+    return None
