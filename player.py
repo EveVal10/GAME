@@ -129,7 +129,7 @@ class Player(pygame.sprite.Sprite):
 
         # Salto con joystick (botón A en Xbox, X en PlayStation)
         if pygame.joystick.get_count() > 0:
-            if joystick.get_button(0) and self.on_ground:  # Botón 0 es el botón A en Xbox
+            if joystick.get_button(3) and self.on_ground:  # Botón 0 es el botón A en Xbox
                 self.velocity_y = self.jump_speed
                 self.on_ground = False
 
