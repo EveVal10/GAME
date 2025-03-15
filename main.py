@@ -209,7 +209,7 @@ def main():
                 # Salir del juego (o podrías volver al menú principal)
                 running = False
 
-        # Acciones de jugador (ATAQUE, etc.)
+        # Acciones de jugador (f, etc.)
         if keys[pygame.K_e]:
             player.attack()
 

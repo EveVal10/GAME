@@ -154,6 +154,16 @@ def show_config_screen(screen):
                                 selected_index = (selected_index + 1) % len(options)
                                 last_joystick_time = current_time
 
+                    # Eje horizontal (eje 0 en muchos joysticks)
+                    if event.axis == 0:
+                        if options[selected_index] == "Volumen":  # Solo ajustar volumen si "Volumen" está seleccionado
+                            if event.value < -0.5:  # Movimiento hacia la izquierda
+                                volume = max(0, volume - 0.05)
+                                pygame.mixer.music.set_volume(volume)
+                            elif event.value > 0.5:  # Movimiento hacia la derecha
+                                volume = min(1, volume + 0.05)
+                                pygame.mixer.music.set_volume(volume)
+
                 if event.type == pygame.JOYBUTTONDOWN:
                     if event.button == JOYSTICK_BUTTON_A:  # Botón A (confirmar)
                         if options[selected_index] == "Volumen":
