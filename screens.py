@@ -1,5 +1,26 @@
 import pygame
 import sys
+import time
+
+# Inicialización de Pygame
+pygame.init()
+
+# Inicialización del joystick
+pygame.joystick.init()
+if pygame.joystick.get_count() > 0:
+    joystick = pygame.joystick.Joystick(0)
+    joystick.init()
+    print(f"Joystick conectado: {joystick.get_name()}")
+else:
+    joystick = None
+    print("No se detectó ningún joystick.")
+
+# Mapeo de botones del joystick
+JOYSTICK_BUTTON_A = 3  # Botón A (confirmar/seleccionar)
+JOYSTICK_BUTTON_B = 1  # Botón B (retroceder/cancelar)
+
+# Variables para controlar el movimiento del joystick
+joystick_delay = 0.2  # Retardo en segundos para evitar movimientos rápidos
 
 def show_screen(screen, text, duration=3000, font_size=50):
     screen.fill((0, 0, 0))
@@ -35,36 +56,22 @@ def fade_screen(screen, text, fade_time=1500, duration=3500, font_size=50):
         clock.tick(30)
 
 def draw_slider(screen, x, y, width, height, value):
-    """
-    Dibuja un slider simple en la pantalla para ajustar un valor (0 a 1).
-    """
-    # Fondo del slider
     pygame.draw.rect(screen, (140, 159, 161), (x, y, width, height), border_radius=5)
-    # Barra de progreso
     pygame.draw.rect(screen, (145, 211, 217), (x, y, int(width * value), height), border_radius=5)
 
 def blur_surface(surface, factor=0.1):
-    """
-    Aplica un efecto de blur a una surface.
-    factor: valor entre 0 y 1; cuanto menor, mayor el blur.
-    """
     width, height = surface.get_size()
-    # Reducir el tamaño para suavizar detalles
     small_size = (max(1, int(width * factor)), max(1, int(height * factor)))
     small_surface = pygame.transform.smoothscale(surface, small_size)
-    # Volver a escalar a tamaño original
     return pygame.transform.smoothscale(small_surface, (width, height))
 
 def show_config_screen(screen):
-    """
-    Muestra el menú de configuración usando como fondo una captura actual del juego
-    con efecto blur y un overlay semitransparente.
-    """
-    # Capturar la pantalla actual del juego
+    last_joystick_time = time.time()  # Inicializar con el tiempo actual
+
     game_screen = screen.copy()
     blurred_background = blur_surface(game_screen, factor=0.1)
     overlay = pygame.Surface(screen.get_size(), pygame.SRCALPHA)
-    overlay.fill((0, 0, 0, 120))  # Negro con transparencia (alpha 120)
+    overlay.fill((0, 0, 0, 120))
 
     font = pygame.font.Font(None, 40)
     options = ["Volumen", "Silenciar/Activar Sonido", "Pantalla Completa", "Volver"]
@@ -72,23 +79,19 @@ def show_config_screen(screen):
     volume = pygame.mixer.music.get_volume()
     clock = pygame.time.Clock()
 
-    # Posición para el slider de volumen
     slider_x = screen.get_width() // 2 - 100
     slider_y = screen.get_height() // 2 - 120
     slider_width = 200
     slider_height = 20
 
     while True:
-        # Dibujar el fondo desenfocado con overlay
         screen.blit(blurred_background, (0, 0))
         screen.blit(overlay, (0, 0))
 
-        # Dibujar el slider de volumen
         draw_slider(screen, slider_x, slider_y, slider_width, slider_height, volume)
         volume_text = font.render(f"Volumen: {int(volume * 100)}%", True, (255, 255, 255))
         screen.blit(volume_text, (slider_x, slider_y - 30))
 
-        # Dibujar las opciones del menú de configuración
         option_rects = []
         for i, option in enumerate(options):
             display_text = option
@@ -108,7 +111,7 @@ def show_config_screen(screen):
                 pygame.quit()
                 sys.exit()
 
-            # Manejo de eventos de teclado
+            # Manejo de eventos de teclado y joystick
             if event.type == pygame.KEYDOWN:
                 if event.key == pygame.K_UP:
                     selected_index = (selected_index - 1) % len(options)
@@ -116,7 +119,7 @@ def show_config_screen(screen):
                     selected_index = (selected_index + 1) % len(options)
                 elif event.key == pygame.K_RETURN:
                     if options[selected_index] == "Volumen":
-                        pass  # No se realiza acción especial
+                        pass
                     elif options[selected_index] == "Silenciar/Activar Sonido":
                         if pygame.mixer.music.get_volume() > 0:
                             pygame.mixer.music.set_volume(0)
@@ -135,33 +138,49 @@ def show_config_screen(screen):
                         volume = min(1, volume + 0.05)
                         pygame.mixer.music.set_volume(volume)
 
-            # Manejo de eventos de ratón
-            if event.type == pygame.MOUSEBUTTONDOWN:
-                mouse_pos = pygame.mouse.get_pos()
-                # Ajustar el volumen al hacer clic sobre el slider
-                if (slider_x <= mouse_pos[0] <= slider_x + slider_width and
-                        slider_y <= mouse_pos[1] <= slider_y + slider_height):
-                    volume = (mouse_pos[0] - slider_x) / slider_width
-                    pygame.mixer.music.set_volume(volume)
-                # Revisar si se hace clic sobre alguna opción
-                for i, rect in enumerate(option_rects):
-                    if rect.collidepoint(mouse_pos):
-                        selected_index = i
-                        if options[i] == "Volumen":
+            # Manejo de eventos del joystick
+            if joystick:
+                if event.type == pygame.JOYAXISMOTION:
+                    # Eje vertical (eje 1 en muchos joysticks)
+                    if event.axis == 1:
+                        if event.value < -0.5:  # Movimiento hacia arriba
+                            current_time = time.time()
+                            if current_time - last_joystick_time > joystick_delay:
+                                selected_index = (selected_index - 1) % len(options)
+                                last_joystick_time = current_time
+                        elif event.value > 0.5:  # Movimiento hacia abajo
+                            current_time = time.time()
+                            if current_time - last_joystick_time > joystick_delay:
+                                selected_index = (selected_index + 1) % len(options)
+                                last_joystick_time = current_time
+
+                if event.type == pygame.JOYBUTTONDOWN:
+                    if event.button == JOYSTICK_BUTTON_A:  # Botón A (confirmar)
+                        if options[selected_index] == "Volumen":
                             pass
-                        elif options[i] == "Silenciar/Activar Sonido":
+                        elif options[selected_index] == "Silenciar/Activar Sonido":
                             if pygame.mixer.music.get_volume() > 0:
                                 pygame.mixer.music.set_volume(0)
                             else:
                                 pygame.mixer.music.set_volume(volume)
-                        elif options[i] == "Pantalla Completa":
+                        elif options[selected_index] == "Pantalla Completa":
                             pygame.display.toggle_fullscreen()
-                        elif options[i] == "Volver":
+                        elif options[selected_index] == "Volver":
                             return
+                    elif event.button == JOYSTICK_BUTTON_B:  # Botón B (retroceder)
+                        return
+
+                if event.type == pygame.JOYHATMOTION:
+                    if event.value == (0, 1):  # D-Pad arriba
+                        selected_index = (selected_index - 1) % len(options)
+                    elif event.value == (0, -1):  # D-Pad abajo
+                        selected_index = (selected_index + 1) % len(options)
 
         clock.tick(30)
 
 def show_menu(screen, background):
+    last_joystick_time = time.time()  # Inicializar con el tiempo actual
+
     font = pygame.font.Font(None, 40)
     options = ["Jugar", "Configuración", "Salir"]
     selected_index = 0
@@ -183,6 +202,8 @@ def show_menu(screen, background):
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 return False
+
+            # Manejo de eventos de teclado y joystick
             if event.type == pygame.KEYDOWN:
                 if event.key == pygame.K_UP:
                     selected_index = (selected_index - 1) % len(options)
@@ -195,16 +216,38 @@ def show_menu(screen, background):
                         return False
                     elif options[selected_index] == "Configuración":
                         show_config_screen(screen)
-            elif event.type == pygame.MOUSEBUTTONDOWN:
-                mouse_pos = pygame.mouse.get_pos()
-                for i, rect in enumerate(buttons_rects):
-                    if rect.collidepoint(mouse_pos):
-                        if options[i] == "Jugar":
+
+            if joystick:
+                if event.type == pygame.JOYAXISMOTION:
+                    # Eje vertical (eje 1 en muchos joysticks)
+                    if event.axis == 1:
+                        if event.value < -0.5:  # Movimiento hacia arriba
+                            current_time = time.time()
+                            if current_time - last_joystick_time > joystick_delay:
+                                selected_index = (selected_index - 1) % len(options)
+                                last_joystick_time = current_time
+                        elif event.value > 0.5:  # Movimiento hacia abajo
+                            current_time = time.time()
+                            if current_time - last_joystick_time > joystick_delay:
+                                selected_index = (selected_index + 1) % len(options)
+                                last_joystick_time = current_time
+
+                if event.type == pygame.JOYBUTTONDOWN:
+                    if event.button == JOYSTICK_BUTTON_A:  # Botón A (confirmar)
+                        if options[selected_index] == "Jugar":
                             return True
-                        elif options[i] == "Salir":
+                        elif options[selected_index] == "Salir":
                             return False
-                        elif options[i] == "Configuración":
+                        elif options[selected_index] == "Configuración":
                             show_config_screen(screen)
+                    elif event.button == JOYSTICK_BUTTON_B:  # Botón B (retroceder)
+                        return False
+
+                if event.type == pygame.JOYHATMOTION:
+                    if event.value == (0, 1):  # D-Pad arriba
+                        selected_index = (selected_index - 1) % len(options)
+                    elif event.value == (0, -1):  # D-Pad abajo
+                        selected_index = (selected_index + 1) % len(options)
 
         clock.tick(30)
 
@@ -213,7 +256,6 @@ def fade_out(screen, duration):
     fade_surface.fill((0, 0, 0))
     clock = pygame.time.Clock()
     alpha = 0
-    # Calcular la cantidad de frames que durará el fade, asumiendo ~60 fps
     frames = duration / (1000 / 60)
     fade_speed = 255 / frames
 
@@ -235,6 +277,8 @@ def fade_out(screen, duration):
         clock.tick(60)
 
 def show_pause_menu(screen, background):
+    last_joystick_time = time.time()  # Inicializar con el tiempo actual
+
     font = pygame.font.Font(None, 40)
     options = ["Reanudar", "Configuración", "Salir"]
     selected_index = 0
@@ -242,13 +286,11 @@ def show_pause_menu(screen, background):
 
     while True:
         screen.blit(background, (0, 0))
-        # Título de "Pausa"
         title_font = pygame.font.Font(None, 60)
         title_surface = title_font.render("PAUSA", True, (255, 255, 0))
         title_rect = title_surface.get_rect(center=(screen.get_width() // 2, screen.get_height() // 4))
         screen.blit(title_surface, title_rect)
 
-        # Dibujar las opciones
         buttons_rects = []
         for i, option in enumerate(options):
             color = (255, 255, 0) if i == selected_index else (255, 255, 255)
@@ -265,7 +307,8 @@ def show_pause_menu(screen, background):
                 pygame.quit()
                 sys.exit()
 
-            elif event.type == pygame.KEYDOWN:
+            # Manejo de eventos de teclado y joystick
+            if event.type == pygame.KEYDOWN:
                 if event.key == pygame.K_UP:
                     selected_index = (selected_index - 1) % len(options)
                 elif event.key == pygame.K_DOWN:
@@ -279,15 +322,55 @@ def show_pause_menu(screen, background):
                     elif chosen == "Salir":
                         return "exit"
 
-            elif event.type == pygame.MOUSEBUTTONDOWN:
-                mouse_pos = pygame.mouse.get_pos()
-                for i, rect in enumerate(buttons_rects):
-                    if rect.collidepoint(mouse_pos):
-                        chosen = options[i]
+            if joystick:
+                if event.type == pygame.JOYAXISMOTION:
+                    # Eje vertical (eje 1 en muchos joysticks)
+                    if event.axis == 1:
+                        if event.value < -0.5:  # Movimiento hacia arriba
+                            current_time = time.time()
+                            if current_time - last_joystick_time > joystick_delay:
+                                selected_index = (selected_index - 1) % len(options)
+                                last_joystick_time = current_time
+                        elif event.value > 0.5:  # Movimiento hacia abajo
+                            current_time = time.time()
+                            if current_time - last_joystick_time > joystick_delay:
+                                selected_index = (selected_index + 1) % len(options)
+                                last_joystick_time = current_time
+
+                if event.type == pygame.JOYBUTTONDOWN:
+                    if event.button == JOYSTICK_BUTTON_A:  # Botón A (confirmar)
+                        chosen = options[selected_index]
                         if chosen == "Reanudar":
                             return "resume"
                         elif chosen == "Configuración":
                             return "config"
                         elif chosen == "Salir":
                             return "exit"
+                    elif event.button == JOYSTICK_BUTTON_B:  # Botón B (retroceder)
+                        return "resume"
+
+                if event.type == pygame.JOYHATMOTION:
+                    if event.value == (0, 1):  # D-Pad arriba
+                        selected_index = (selected_index - 1) % len(options)
+                    elif event.value == (0, -1):  # D-Pad abajo
+                        selected_index = (selected_index + 1) % len(options)
+
         clock.tick(30)
+
+def main():
+    screen = pygame.display.set_mode((640, 480))
+    pygame.display.set_caption("Unmei Gisei - 640x480")
+
+    # Cargar fondo
+    background = pygame.image.load("assets/screen/background.png").convert()
+    background = pygame.transform.scale(background, (640, 480))
+
+    # Mostrar menú
+    if not show_menu(screen, background):
+        pygame.quit()
+        return
+
+    pygame.quit()
+
+if __name__ == "__main__":
+    main()
