@@ -90,11 +90,11 @@ class Player(pygame.sprite.Sprite):
             self.handle_death()
             return
 
-        # Manejo de Teclado
+        # Manejo de Teclado y Joystick
         keys = pygame.key.get_pressed()
         self.velocity_x = 0
 
-        # Movimiento horizontal
+        # Movimiento horizontal con teclado
         if keys[pygame.K_a]:
             self.velocity_x = -self.speed
             self.state = "left"
@@ -103,15 +103,35 @@ class Player(pygame.sprite.Sprite):
             self.velocity_x = self.speed
             self.state = "right"
             self.last_direction = "right"
-        else:
-            # Si no se está moviendo ni atacando, quedarse en idle
-            if not self.attacking:
-                self.state = "idle"
 
-        # Salto
+        # Movimiento horizontal con joystick
+        if pygame.joystick.get_count() > 0:
+            joystick = pygame.joystick.Joystick(0)
+            joystick.init()
+            axis_x = joystick.get_axis(0)  # Eje X del joystick izquierdo
+            if abs(axis_x) > 0.1:  # Deadzone para evitar movimiento accidental
+                self.velocity_x = int(axis_x * self.speed)
+                if axis_x < 0:
+                    self.state = "left"
+                    self.last_direction = "left"
+                else:
+                    self.state = "right"
+                    self.last_direction = "right"
+
+        # Si no se está moviendo ni atacando, quedarse en idle
+        if self.velocity_x == 0 and not self.attacking:
+            self.state = "idle"
+
+        # Salto con teclado
         if keys[pygame.K_SPACE] and self.on_ground:
             self.velocity_y = self.jump_speed
             self.on_ground = False
+
+        # Salto con joystick (botón A en Xbox, X en PlayStation)
+        if pygame.joystick.get_count() > 0:
+            if joystick.get_button(0) and self.on_ground:  # Botón 0 es el botón A en Xbox
+                self.velocity_y = self.jump_speed
+                self.on_ground = False
 
         # Gravedad y movimiento vertical
         self.velocity_y += self.gravity
