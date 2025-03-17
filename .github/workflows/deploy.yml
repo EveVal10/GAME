@@ -1,0 +1,49 @@
+name: Deploy Game to Itch.io
+
+on:
+  push:
+    branches:
+      - main  # Se ejecuta cuando hay cambios en la rama principal
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Clonar el repositorio
+        uses: actions/checkout@v3
+
+      - name: Configurar Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: "3.10"
+
+      - name: Instalar dependencias
+        run: |
+          pip install -r requirements.txt
+
+      - name: Construcción del juego
+        run: python build.py  # Si tienen un script de construcción
+
+      - name: Subir artefacto de la versión
+        uses: actions/upload-artifact@v3
+        with:
+          name: game-build
+          path: dist/  # Carpeta donde se guarda el ejecutable
+
+      - name: Instalar Butler
+        run: |
+          curl -L -o butler.zip https://broth.itch.ovh/butler/linux-amd64/LATEST/archive/default
+          unzip butler.zip
+          chmod +x butler
+          sudo mv butler /usr/local/bin/
+
+      - name: Iniciar sesión en Butler
+        env:
+          BUTLER_API_KEY: ${{ secrets.BUTLER_API_KEY }}
+        run: butler login
+
+      - name: Desplegar el juego en Itch.io
+        env:
+          BUTLER_API_KEY: ${{ secrets.BUTLER_API_KEY }}
+        run: butler push dist/ usuarioitchio/nombre-juego:win-linux
