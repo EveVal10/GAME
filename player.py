@@ -1,6 +1,5 @@
 import pygame
 import os
-import time
 
 class Player(pygame.sprite.Sprite):
     def __init__(self, x, y):
@@ -36,34 +35,36 @@ class Player(pygame.sprite.Sprite):
 
         # Bandera de muerte
         self.dead = False
-        # Indica si la animación de muerte ha finalizado (tras 5s)
         self.death_animation_finished = False
+        self.death_start_time = 0  # Tiempo de muerte en milisegundos
 
         # Control de animación
         self.animation_timer = 0
         self.animation_speed = 5
 
-        # Control de muerte
-        self.death_start_time = None  # Guarda el tiempo en que comienza a "estar muerto"
-
         # Control de ataque
         self.attacking = False
-        self.attack_start_time = None
-        self.attack_duration = 0.5  # En segundos
+        self.attack_start_time = 0
+        self.attack_duration = 500  # Duración del ataque en milisegundos
         self.attack_has_hit = False
         self.attack_rect = None
 
-        # --- SISTEMA DE VIDA ---
+        # Sistema de vida
         self.max_health = 100
         self.health = self.max_health
-        self.invulnerability_duration = 1.0  # 1 segundo de invulnerabilidad tras recibir daño
-        self.last_damage_time = 0  # Último tiempo de daño
+        self.invulnerability_duration = 1000  # 1 segundo de invulnerabilidad
+        self.last_damage_time = 0  # Último tiempo de daño en milisegundos
+
+        # Joystick
+        self.joystick = None
+        if pygame.joystick.get_count() > 0:
+            self.joystick = pygame.joystick.Joystick(0)
+            self.joystick.init()
 
     def load_frames(self, folder, scale_factor=1):
         """Carga y ordena los frames de forma numérica."""
         frames = []
         files = os.listdir(folder)
-        # Ordenar los archivos numéricamente (si llevan números en el nombre)
         files.sort(key=lambda f: int(''.join(filter(str.isdigit, f))) 
                    if ''.join(filter(str.isdigit, f)) != "" else 0)
         
@@ -77,24 +78,18 @@ class Player(pygame.sprite.Sprite):
                     image = pygame.transform.scale(image, new_size)
                 frames.append(image)
 
-        # Si no se encuentran imágenes, crear un surface vacío para evitar errores
         return frames if frames else [pygame.Surface((32, 64))]
 
     def update(self, collision_rects, enemy_group, map_width, map_height):
-        """
-        Actualiza la lógica del jugador: movimiento, colisiones, ataque,
-        daño recibido, animación y muerte.
-        """
+        """Actualiza la lógica del jugador."""
         if self.dead:
-            # Si está muerto, manejamos la animación de muerte
             self.handle_death()
             return
 
-        # Manejo de Teclado y Joystick
-        keys = pygame.key.get_pressed()
+        # Movimiento horizontal
         self.velocity_x = 0
+        keys = pygame.key.get_pressed()
 
-        # Movimiento horizontal con teclado
         if keys[pygame.K_a]:
             self.velocity_x = -self.speed
             self.state = "left"
@@ -104,12 +99,9 @@ class Player(pygame.sprite.Sprite):
             self.state = "right"
             self.last_direction = "right"
 
-        # Movimiento horizontal con joystick
-        if pygame.joystick.get_count() > 0:
-            joystick = pygame.joystick.Joystick(0)
-            joystick.init()
-            axis_x = joystick.get_axis(0)  # Eje X del joystick izquierdo
-            if abs(axis_x) > 0.1:  # Deadzone para evitar movimiento accidental
+        if self.joystick:
+            axis_x = self.joystick.get_axis(0)
+            if abs(axis_x) > 0.1:
                 self.velocity_x = int(axis_x * self.speed)
                 if axis_x < 0:
                     self.state = "left"
@@ -118,22 +110,15 @@ class Player(pygame.sprite.Sprite):
                     self.state = "right"
                     self.last_direction = "right"
 
-        # Si no se está moviendo ni atacando, quedarse en idle
         if self.velocity_x == 0 and not self.attacking:
             self.state = "idle"
 
-        # Salto con teclado
-        if keys[pygame.K_SPACE] and self.on_ground:
+        # Salto
+        if (keys[pygame.K_SPACE] or (self.joystick and self.joystick.get_button(0))) and self.on_ground:
             self.velocity_y = self.jump_speed
             self.on_ground = False
 
-        # Salto con joystick (botón A en Xbox, X en PlayStation)
-        if pygame.joystick.get_count() > 0:
-            if joystick.get_button(3) and self.on_ground:  # Botón 0 es el botón A en Xbox
-                self.velocity_y = self.jump_speed
-                self.on_ground = False
-
-        # Gravedad y movimiento vertical
+        # Gravedad
         self.velocity_y += self.gravity
         self.rect.y += self.velocity_y
         self.handle_collisions(collision_rects, "vertical")
@@ -145,37 +130,33 @@ class Player(pygame.sprite.Sprite):
             else:
                 self.state = "jump_right"
 
-        # Verificar colisiones con enemigos (daño por contacto)
+        # Colisiones con enemigos
         hits = pygame.sprite.spritecollide(self, enemy_group, False)
         for enemy in hits:
-            damage = getattr(enemy, "damage", 10)  # Asume que el enemigo tiene un atributo damage
+            damage = getattr(enemy, "damage", 10)
             self.take_damage(damage)
 
         # Movimiento horizontal y colisiones
         self.rect.x += self.velocity_x
         self.handle_collisions(collision_rects, "horizontal")
 
-        # Limitar la posición al tamaño del mapa
-        if self.rect.left < 0:
-            self.rect.left = 0
-        if self.rect.right > map_width:
-            self.rect.right = map_width
-        if self.rect.top < 0:
-            self.rect.top = 0
-        if self.rect.bottom > map_height:
-            self.rect.bottom = map_height
+        # Limitar posición al mapa
+        self.rect.left = max(0, self.rect.left)
+        self.rect.right = min(map_width, self.rect.right)
+        self.rect.top = max(0, self.rect.top)
+        self.rect.bottom = min(map_height, self.rect.bottom)
 
-        # Actualizar animación
+        # Animación
         self.animate()
 
-        # Manejo del ataque
+        # Ataque
         if self.attacking:
             self.handle_attack(enemy_group)
         else:
             self.attack_rect = None
 
     def handle_collisions(self, collision_rects, direction):
-        """Ajusta la posición del jugador al detectar colisiones."""
+        """Maneja colisiones con el entorno."""
         for rect in collision_rects:
             if self.rect.colliderect(rect):
                 if direction == "horizontal":
@@ -193,7 +174,7 @@ class Player(pygame.sprite.Sprite):
                         self.velocity_y = 0
 
     def animate(self):
-        """Actualiza el frame de animación."""
+        """Actualiza la animación."""
         self.animation_timer += 1
         if self.animation_timer >= self.animation_speed:
             self.animation_timer = 0
@@ -201,69 +182,51 @@ class Player(pygame.sprite.Sprite):
             self.image = self.animations[self.state][self.current_frame]
 
     def take_damage(self, amount):
-        """
-        Resta salud al jugador, considerando un periodo de invulnerabilidad
-        para no recibir daño continuo cada frame.
-        """
-        current_time = time.time()
+        """Reduce la salud del jugador."""
+        current_time = pygame.time.get_ticks()
         if current_time - self.last_damage_time < self.invulnerability_duration:
-            # Aún en periodo de invulnerabilidad
             return
 
         self.health -= amount
         self.last_damage_time = current_time
 
-        # Si la salud llega a cero o menos, se muere
         if self.health <= 0:
             self.health = 0
             self.die()
 
-    def draw_health_bar(self, surface, camera):
-        """
-        Dibuja la barra de salud sobre el sprite del jugador.
-        'camera' es un objeto que ajusta la posición según la cámara.
-        """
-        applied_rect = camera.apply(self.rect)
-        bar_width = self.rect.width
-        bar_height = 5
-        bar_x = applied_rect.x
-        bar_y = applied_rect.y - 10
+    # def draw_health_bar(self, surface, camera):
+    #     """Dibuja la barra de vida."""
+    #     applied_rect = camera.apply(self.rect)
+    #     bar_width = self.rect.width
+    #     bar_height = 5
+    #     bar_x = applied_rect.x
+    #     bar_y = applied_rect.y - 10
 
-        # Fondo (rojo)
-        pygame.draw.rect(surface, (255, 0, 0), (bar_x, bar_y, bar_width, bar_height))
-        # Relleno (verde) según proporción de salud
-        fill_width = int(bar_width * (self.health / self.max_health))
-        pygame.draw.rect(surface, (0, 255, 0), (bar_x, bar_y, fill_width, bar_height))
+    #     pygame.draw.rect(surface, (255, 0, 0), (bar_x, bar_y, bar_width, bar_height))
+    #     fill_width = int(bar_width * (self.health / self.max_health))
+    #     pygame.draw.rect(surface, (0, 255, 0), (bar_x, bar_y, fill_width, bar_height))
 
     def die(self):
-        """Inicia la animación de muerte del jugador."""
-        if not self.dead:  # Evitar llamar 'die()' múltiples veces
+        """Inicia la animación de muerte."""
+        if not self.dead:
             self.dead = True
             self.death_animation_finished = False
             self.state = "death"
             self.current_frame = 0
             self.animation_timer = 0
-            self.death_start_time = time.time()  # Registrar tiempo de muerte
+            self.death_start_time = pygame.time.get_ticks()
 
     def handle_death(self):
-        """
-        Muestra la animación de muerte. Al pasar 5s, marcamos
-        self.death_animation_finished = True, pero NO respawneamos aquí.
-        """
-        # Avanza la animación de muerte
+        """Maneja la animación de muerte."""
         if self.current_frame < len(self.animations["death"]) - 1:
             self.animation_timer += 1
-            # Hacemos la animación un poco más lenta
             if self.animation_timer >= self.animation_speed * 2:
                 self.animation_timer = 0
                 self.current_frame += 1
                 self.image = self.animations["death"][self.current_frame]
         else:
-            # Mantener el último frame de la animación
             self.image = self.animations["death"][-1]
-            # Cuando pasen 5 segundos de morir,
-            # marcamos la animación como finalizada
-            if (time.time() - self.death_start_time) >= 5:
+            if pygame.time.get_ticks() - self.death_start_time >= 5000:
                 self.death_animation_finished = True
 
     def respawn(self):
@@ -276,16 +239,15 @@ class Player(pygame.sprite.Sprite):
         self.death_animation_finished = False
         self.state = "idle"
         self.current_frame = 0
-        self.death_start_time = None
-        self.health = self.max_health  # Recuperar la vida al máximo
+        self.death_start_time = 0
+        self.health = self.max_health
 
     def attack(self):
         """Inicia la animación de ataque."""
         if not self.attacking:
             self.attacking = True
             self.attack_has_hit = False
-            self.attack_start_time = time.time()
-            # Usar animación de ataque correspondiente a la última dirección
+            self.attack_start_time = pygame.time.get_ticks()
             if self.last_direction == "left":
                 self.state = "attack_left"
             else:
@@ -294,10 +256,7 @@ class Player(pygame.sprite.Sprite):
             self.animation_timer = 0
 
     def handle_attack(self, enemy_group):
-        """
-        Avanza la animación de ataque y crea un rectángulo de ataque
-        para dañar enemigos que colisionen con él.
-        """
+        """Maneja la animación y el daño del ataque."""
         if self.current_frame < len(self.animations[self.state]) - 1:
             self.animation_timer += 1
             if self.animation_timer >= self.animation_speed:
@@ -305,14 +264,12 @@ class Player(pygame.sprite.Sprite):
                 self.current_frame += 1
                 self.image = self.animations[self.state][self.current_frame]
         else:
-            # Si ya terminó la animación de ataque, revisar si excedió la duración
-            if time.time() - self.attack_start_time >= self.attack_duration:
+            if pygame.time.get_ticks() - self.attack_start_time >= self.attack_duration:
                 self.attacking = False
                 self.state = "idle"
                 self.current_frame = 0
                 self.attack_rect = None
 
-        # Calcular el rectángulo de ataque
         if self.attacking and self.current_frame >= 1:
             attack_range = 30
             if self.last_direction == "left":
@@ -327,7 +284,6 @@ class Player(pygame.sprite.Sprite):
                                           self.rect.height)
             self.attack_rect = attack_rect
 
-            # Aplicar daño a enemigos sólo una vez por ataque
             if not self.attack_has_hit:
                 for enemy in enemy_group:
                     if attack_rect.colliderect(enemy.rect):

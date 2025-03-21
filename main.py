@@ -22,6 +22,7 @@ from intro import show_intro_scenes
 from enemies import Enemy
 from consumable import Consumable
 from dialog import show_dialog_with_name
+from hud import HUD  # Importar la clase HUD
 
 # Configuración de assets
 BACKGROUND_IMAGE = "assets/screen/background.png"
@@ -150,6 +151,9 @@ def main():
     collision_rects = get_collision_rects(tmx_data)
     player = Player(*get_player_spawn(tmx_data))
     player_group = pygame.sprite.GroupSingle(player)
+
+    # Crear el HUD
+    hud = HUD(player)  # Pasar el jugador al HUD
 
     enemies = pygame.sprite.Group()
     for enemy_data in get_enemy_spawns(tmx_data):
@@ -292,7 +296,7 @@ def main():
             # Se dibuja el juego normalmente
             draw_tiled_map(screen, tmx_data, camera.x, camera.y)
             screen.blit(player.image, camera.apply(player.rect))
-            player.draw_health_bar(screen, camera)
+            # player.draw_health_bar(screen, camera)
 
             for enemy in enemies:
                 screen.blit(enemy.image, camera.apply(enemy.rect))
@@ -338,6 +342,9 @@ def main():
                     player.respawn()
                     # Reiniciamos la variable para la próxima muerte
                     death_screen_start_time = None
+
+        # Dibujar el HUD
+        hud.draw(screen)  # Dibujar el HUD sobre el juego
 
         pygame.display.flip()
         clock.tick(60)
