@@ -116,11 +116,11 @@ class Player(pygame.sprite.Sprite):
         keys = pygame.key.get_pressed()
 
         moving = False
-        if keys[pygame.K_a]:
+        if keys[pygame.K_LEFT]:
             self.velocity_x = -self.speed
             self.state = "left"
             self.last_direction = "left"
-        elif keys[pygame.K_d]:
+        elif keys[pygame.K_RIGHT]:
             self.velocity_x = self.speed
             self.state = "right"
             self.last_direction = "right"
