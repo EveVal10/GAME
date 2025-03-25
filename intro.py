@@ -80,8 +80,8 @@ def show_intro_scenes(screen):
     scenes = [
         { "image": "assets/intro/scene1.png", "speaker": "Narrador", "dialogue": "Prólogo: El Eclipse de la Gema", "duration": None },
         { "image": "assets/intro/scene1.png", "speaker": "Narrador", "dialogue": "La noche en que el cielo se quebró, la Torre del Alba ardía con un fulgor enfermo.", "duration": None },
-        { "image": "assets/intro/scene2.jpeg", "speaker": "Narrador", "dialogue": "Felinaria, Alborfelis un reino de armonía, temblaba bajo el peso de una corrupción desconocida.", "duration": None },
-        { "image": "assets/intro/scene2.jpeg", "speaker": "Narrador", "dialogue": "Desde los cimientos de la torre, la Gema de la Unidad se fragmentaba con un crujido desgarrador...", "duration": None },
+        { "image": "assets/intro/scene2.png", "speaker": "Narrador", "dialogue": "Felinaria, Alborfelis un reino de armonía, temblaba bajo el peso de una corrupción desconocida.", "duration": None },
+        { "image": "assets/intro/scene2.png", "speaker": "Narrador", "dialogue": "Desde los cimientos de la torre, la Gema de la Unidad se fragmentaba con un crujido desgarrador...", "duration": None },
         { "image": "assets/intro/scene5.png", "speaker": "Narrador", "dialogue": "Su luz sagrada era devorada por un abismo de sombras.", "duration": None },
         { "image": "assets/intro/scene6.png", "speaker": "Narrador", "dialogue": "Los hermanos, últimos guardianes de la torre, contemplaban impotentes la caída de su hogar.", "duration": None },
         { "image": "assets/intro/scene8.png", "speaker": "Narrador", "dialogue": "La silueta de Umbra, el espíritu olvidado, emergía del núcleo de la gema...", "duration": None },

@@ -63,10 +63,7 @@ class Enemy(pygame.sprite.Sprite):
             all_sounds.append(self.damage_sound)
 
     def load_frames(self, folder):
-        """
-        Carga y ordena las imágenes .png de la carpeta 'folder' 
-        según el número tras el último '_' en el nombre (p.ej. frame_0_0.png).
-        """
+       
         frames = []
         if not os.path.isdir(folder):
             return frames  # si no existe la carpeta, retornamos vacío
@@ -89,13 +86,7 @@ class Enemy(pygame.sprite.Sprite):
         return frames
 
     def update(self, collision_rects, player):
-        """
-        Se llama cada frame:
-         1) Lógica de IA (ai_logic).
-         2) Movimiento y colisiones (move_and_collide).
-         3) Ver si ataca (handle_attack).
-         4) Animar (animate).
-        """
+       
         # 1) Decidir estado
         self.ai_logic(player)
         # 2) Mover + colisiones
@@ -106,11 +97,7 @@ class Enemy(pygame.sprite.Sprite):
         self.animate()
 
     def ai_logic(self, player):
-        """
-        Lógica básica:
-         - Si el jugador está lejos (más de chase_range), state = "idle".
-         - Si está cerca, state = "chase" y ajusta la dirección.
-        """
+      
         distance = abs(player.rect.centerx - self.rect.centerx)
         if distance > self.chase_range:
             self.set_state("idle")
@@ -175,9 +162,7 @@ class Enemy(pygame.sprite.Sprite):
         self.rect.topleft = self.hitbox.topleft
 
     def handle_attack(self, player):
-        """
-        Si el jugador está a <= attack_range y hay cooldown, atacar.
-        """
+       
         distance = abs(player.rect.centerx - self.rect.centerx)
         if distance <= self.attack_range and self.grounded:
             current_time = pygame.time.get_ticks()
@@ -192,9 +177,7 @@ class Enemy(pygame.sprite.Sprite):
                 self.set_state("idle")
 
     def animate(self):
-        """
-        Selecciona frames según el estado y hace flip si direction == -1.
-        """
+       
         if self.state == "chase":
             frames_list = self.animations.get("run", [])
         else:
@@ -219,10 +202,7 @@ class Enemy(pygame.sprite.Sprite):
             self.image = pygame.transform.flip(self.image, True, False)
 
     def take_damage(self, amount):
-        """
-        El jugador (u otra entidad) llama a este método para dañar al enemigo.
-        En esta 'opción 1', el enemigo muere INMEDIATAMENTE sin animación de death.
-        """
+        
         self.health -= amount
         if self.health <= 0:
             self.health = 0
