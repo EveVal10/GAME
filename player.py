@@ -317,5 +317,6 @@ class Player(pygame.sprite.Sprite):
             if not self.attack_has_hit:
                 for enemy in enemy_group:
                     if attack_rect.colliderect(enemy.rect):
-                        enemy.take_damage(20)
+                        knockback_dir = 1 if self.last_direction == "right" else -1
+                        enemy.take_damage(20, knockback_dir)
                 self.attack_has_hit = True

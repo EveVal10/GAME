@@ -9,6 +9,14 @@ class Enemy(pygame.sprite.Sprite):
         self.speed = speed
         self.health = health
         self.damage = damage
+
+        self.knockback_resistance = 0.8
+
+        
+
+        self.stunned = False
+        self.stun_duration = 300  # ms
+        self.last_stun_time = 0
         
         # Estados posibles: "idle", "chase", "attack", "death"
         self.state = "idle"
@@ -86,14 +94,25 @@ class Enemy(pygame.sprite.Sprite):
         return frames
 
     def update(self, collision_rects, player):
-       
-        # 1) Decidir estado
-        self.ai_logic(player)
-        # 2) Mover + colisiones
-        self.move_and_collide(collision_rects)
-        # 3) Ver ataque
-        self.handle_attack(player)
-        # 4) Animar
+        # 1) Actualizar estado de stun
+        if self.stunned:
+            # Verificar si ha terminado el tiempo de stun
+            if pygame.time.get_ticks() - self.last_stun_time > self.stun_duration:
+                self.stunned = False
+
+            # Aplicar resistencia al knockback SOLO durante el stun
+            self.velocity.x *= self.knockback_resistance
+
+        # 2) Ejecutar lógica solo si no está aturdido y está vivo
+        if not self.stunned and self.state != "death":
+            # Decidir estado
+            self.ai_logic(player)
+            # Mover + colisiones
+            self.move_and_collide(collision_rects)
+            # Ver ataque
+            self.handle_attack(player)
+
+        # 3) Animar siempre (incluso durante stun o muerte)
         self.animate()
 
     def ai_logic(self, player):
@@ -116,51 +135,59 @@ class Enemy(pygame.sprite.Sprite):
             self.animation_timer = 0
 
     def move_and_collide(self, collision_rects):
-        """Aplica velocidad horizontal, gravedad y resuelve colisiones."""
-        # Velocidad X (si está en 'chase')
-        self.velocity.x = 0
-        if self.state == "chase":
-            self.velocity.x = self.speed * self.direction
+        """Aplica velocidad, gravedad y resuelve colisiones con stun controlado."""
+        # Aplicar gravedad siempre (incluso durante stun)
+        self.velocity.y += self.gravity
 
-        # Mover en X
+        # Movimiento horizontal solo si no está aturdido
+        if not self.stunned:
+            # Velocidad X basada en estado
+            self.velocity.x = self.speed * self.direction if self.state == "chase" else 0
+
+            # Salto automático (solo si no está aturdido)
+            if self.state == "chase" and self.grounded:
+                self.auto_jump(collision_rects)
+
+        # Aplicar movimiento horizontal
         self.hitbox.x += self.velocity.x
+        self.resolve_collisions(collision_rects, "horizontal")
 
-        # Colisiones horizontales
+        # Aplicar movimiento vertical
+        self.hitbox.y += self.velocity.y
+        self.grounded = False  # Reset antes de verificar colisiones
+        self.resolve_collisions(collision_rects, "vertical")
+
+        # Sincronizar posición del sprite
+        self.rect.topleft = self.hitbox.topleft
+
+    def auto_jump(self, collision_rects):
+        """Lógica de salto automático para obstáculos."""
+        sensor_x = self.hitbox.centerx + (self.direction * (self.hitbox.width//2 + 5))
+        sensor_rect = pygame.Rect(sensor_x, self.hitbox.bottom-5, 5, 5)
+        if any(sensor_rect.colliderect(r) for r in collision_rects):
+            self.velocity.y = self.jump_force
+            self.grounded = False
+
+    def resolve_collisions(self, collision_rects, direction):
+        """Maneja colisiones en una dirección específica."""
         for rect in collision_rects:
-            if self.hitbox.colliderect(rect):
+            if not self.hitbox.colliderect(rect):
+                continue
+
+            if direction == "horizontal":
                 if self.velocity.x > 0:
                     self.hitbox.right = rect.left
                 elif self.velocity.x < 0:
                     self.hitbox.left = rect.right
-
-        # Salto automático si está en "chase" + grounded + hay obstáculo
-        if self.state == "chase" and self.grounded:
-            sensor_x = self.hitbox.centerx + (self.direction * (self.hitbox.width // 2 + 5))
-            sensor_y = self.hitbox.bottom - 5
-            sensor_rect = pygame.Rect(sensor_x, sensor_y, 5, 5)
-            if any(sensor_rect.colliderect(r) for r in collision_rects):
-                self.velocity.y = self.jump_force
-                self.grounded = False
-
-        # Gravedad
-        self.velocity.y += self.gravity
-        self.hitbox.y += self.velocity.y
-
-        # Colisiones verticales
-        self.grounded = False
-        for rect in collision_rects:
-            if self.hitbox.colliderect(rect):
-                if self.velocity.y > 0:  # Cayendo
+            else:  # vertical
+                if self.velocity.y > 0:
                     self.hitbox.bottom = rect.top
                     self.velocity.y = 0
                     self.grounded = True
-                elif self.velocity.y < 0:  # Saltando
+                elif self.velocity.y < 0:
                     self.hitbox.top = rect.bottom
                     self.velocity.y = 0
-
-        # Actualiza posición real
-        self.rect.topleft = self.hitbox.topleft
-
+         
     def handle_attack(self, player):
        
         distance = abs(player.rect.centerx - self.rect.centerx)
@@ -201,11 +228,23 @@ class Enemy(pygame.sprite.Sprite):
         if self.direction == -1:
             self.image = pygame.transform.flip(self.image, True, False)
 
-    def take_damage(self, amount):
-        
+    def take_damage(self, amount, knockback_direction=0):
+        """Reduce la salud y aplica knockback en una dirección."""
         self.health -= amount
+
+        # Aplicar knockback solo si el enemigo sigue vivo
+        if self.health > 0:
+            horizontal_knockback = 15  # Empuje horizontal
+            vertical_knockback = -12    # Fuerza vertical (pequeño salto)
+
+            self.velocity.x = horizontal_knockback * knockback_direction
+            self.velocity.y = vertical_knockback  # Salto hacia arriba
+
+            self.stunned = True  # Nueva variable de estado
+            self.last_stun_time = pygame.time.get_ticks()  # Registrar momento del stun
+
+        # Muerte del enemigo
         if self.health <= 0:
             self.health = 0
             self.set_state("death")
-            # Opción 1: matar al enemigo INMEDIATAMENTE
-            self.kill()  # Se quita del grupo de sprites en cuanto muere
+            self.kill()
