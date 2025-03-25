@@ -119,7 +119,7 @@ def show_intro_scenes(screen):
         { "image": "assets/intro/scene1.jpeg", "speaker": "Narrador", "dialogue": "El hermano no elegido desaparece entre el caos y las sombras.", "duration": None },
         { "image": "assets/intro/scene1.jpeg", "speaker": "Narrador", "dialogue": "El hermano restante lucha. Pero es inútil.", "duration": None },
         { "image": "assets/intro/scene1.jpeg", "speaker": "Narrador", "dialogue": "Un golpe brutal lo arroja contra las ruinas. Su mundo se desmorona.", "duration": None },
-        { "image": "assets/intro/scene1.jpeg", "speaker": "Narrador", "dialogue": "{player} siente cómo su conciencia se apaga lentamente.", "duration": None },
+        { "image": "assets/intro/scene1.jpeg", "speaker": "Narrador", "dialogue": f"{game_state.player_name} siente cómo su conciencia se apaga lentamente.", "duration": None },
         { "image": "assets/intro/scene1.jpeg", "speaker": "Narrador", "dialogue": "El tiempo deja de existir...", "duration": None },
     ]
 
@@ -134,6 +134,6 @@ def show_intro_scenes(screen):
         screen.blit(image, (0, 0))
         pygame.display.flip()
 
-        show_dialog_with_name(screen, scene["speaker"], scene["dialogue"])
-
+        dialogue = scene["dialogue"].replace("{player}", game_state.player_name)
+        show_dialog_with_name(screen, scene["speaker"], dialogue)
     return True

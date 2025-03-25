@@ -83,3 +83,19 @@ def get_level_end(tmx_data):
                 if obj.name == "LevelEnd":
                     return pygame.Rect(obj.x, obj.y, obj.width, obj.height)
     return None
+
+def get_npc_data(tmx_data):
+    """Obtiene datos de NPCs del tilemap"""
+    npcs = []
+    for layer in tmx_data.layers:
+        if isinstance(layer, pytmx.TiledObjectGroup) and layer.name == "NPCs":
+            for obj in layer:
+                if obj.type == "npc":
+                    npcs.append({
+                        "x": obj.x,
+                        "y": obj.y,
+                        "width": obj.width,
+                        "height": obj.height,
+                        "properties": obj.properties
+                    })
+    return npcs
