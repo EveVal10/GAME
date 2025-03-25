@@ -55,9 +55,11 @@ def get_enemy_spawns(tmx_data):
                         "y": obj.y,
                         "type": obj.properties.get("enemy_type", "wolf"),
                         "speed": obj.properties.get("enemy_speed", 2),
-                        "health": obj.properties.get("enemy_health", 100)
+                        "health": obj.properties.get("enemy_health", 25),
+                        "attack": obj.properties.get("enemy_attack", 10)  # <--- importante
                     })
     return enemies
+
 
 def get_consumable_spawns(tmx_data):
     consumables = []

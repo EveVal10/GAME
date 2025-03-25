@@ -23,17 +23,27 @@ from enemies import Enemy
 from consumable import Consumable
 from dialog import show_dialog_with_name
 from hud import HUD  # Importar la clase HUD
+from utils import get_font
 
 # Configuración de assets
 BACKGROUND_IMAGE = "assets/screen/background.png"
 BACKGROUND_MUSIC = "assets/audio/menu/EscapeThatFeeling.mp3"
-INTRO_MUSIC = "assets/audio/menu/EscapeThatFeeling.mp3"
+INTRO_MUSIC = "assets/audio/game/intro_music.mp3"
 GAME_MUSIC = "assets/audio/menu/EscapeThatFeeling.mp3"
 TMX_MAP_PATH = "assets/tilemaps/level1_1.tmx"
-NEXT_TMX_MAP_PATH = "assets/tilemaps/level2_1.tmx"
+NEXT_TMX_MAP_PATH = "assets/tilemaps/level1_2.tmx"
 
 LOGO_1 = "assets/logo/logoUTCJ.png"
 LOGO_2 = "assets/logo/logo.png"
+
+
+GAME_MUSIC_LEVELS = {
+    "level1": "assets/audio/game/level1_music.mp3",
+    "level2": "assets/audio/game/level2_music.mp3",
+    "level3": "assets/audio/game/level3_music.mp3"
+}
+
+
 
 
 def fade_music(new_music, fade_time=2000):
@@ -93,14 +103,23 @@ def show_logo(screen, logo_path, fade_in_time=2000, display_time=4000, fade_out_
         screen.blit(logo, rect)
         pygame.display.update()
         pygame.time.delay(fade_out_time // 50)
+        
+def actualizar_volumen_efectos(volumen):
+    global all_sounds
+    for sonido in all_sounds:
+        sonido.set_volume(volumen)       
 
 
 def main():
     pygame.init()
     pygame.joystick.init()
+    
+    music_volume = 0.5
+    effects_volume = 0.5
+    all_sounds = []
 
     if pygame.joystick.get_count() > 0:
-        joystick = pygame.joystick.Joystick(0)  # Conectar el primer joystick (índice 0)
+        joystick = pygame.joystick.Joystick(0)
         joystick.init()
         print(f"Joystick conectado: {joystick.get_name()}")
     else:
@@ -110,22 +129,19 @@ def main():
     screen = pygame.display.set_mode((640, 480))
     pygame.display.set_caption("Unmei Gisei - 640x480")
 
-    # Sistema de audio
     pygame.mixer.init()
     pygame.mixer.music.load(BACKGROUND_MUSIC)
-    pygame.mixer.music.set_volume(0.5)
+    pygame.mixer.music.set_volume(music_volume)
     pygame.mixer.music.play(-1)
 
-    # Mostrar logos
     show_logo(screen, LOGO_1)
     show_logo(screen, LOGO_2)
 
-    # Menú principal
     background = pygame.transform.scale(
         pygame.image.load(BACKGROUND_IMAGE).convert(),
         (640, 480)
     )
-    if not show_menu(screen, background):
+    if not show_menu(screen, background, music_volume, effects_volume, all_sounds):
         pygame.quit()
         return
 
@@ -136,9 +152,10 @@ def main():
         pygame.quit()
         return
 
-    fade_music(GAME_MUSIC, 2000)
-
     # Cargar el primer nivel
+    current_level = "level1"  # Indica el nivel actual
+    fade_music(GAME_MUSIC_LEVELS[current_level], 2000)
+
     tmx_data = load_map(TMX_MAP_PATH)
     camera = Camera(
         tmx_data.width * tmx_data.tilewidth,
@@ -149,11 +166,10 @@ def main():
     map_height = tmx_data.height * tmx_data.tileheight
 
     collision_rects = get_collision_rects(tmx_data)
-    player = Player(*get_player_spawn(tmx_data))
+    player = Player(*get_player_spawn(tmx_data), effects_volume=effects_volume, all_sounds=all_sounds)
     player_group = pygame.sprite.GroupSingle(player)
 
-    # Crear el HUD
-    hud = HUD(player)  # Pasar el jugador al HUD
+    hud = HUD(player)
 
     enemies = pygame.sprite.Group()
     for enemy_data in get_enemy_spawns(tmx_data):
@@ -163,7 +179,10 @@ def main():
                 y=enemy_data["y"],
                 enemy_type=enemy_data["type"],
                 speed=enemy_data["speed"],
-                health=enemy_data["health"]
+                health=enemy_data["health"],
+                damage=enemy_data["attack"],
+                effects_volume=effects_volume,
+                all_sounds=all_sounds
             )
         )
 
@@ -184,72 +203,62 @@ def main():
     clock = pygame.time.Clock()
     running = True
 
-    # Para medir daño gradual
     health_decrease_rate = 1
     last_health_decrease = pygame.time.get_ticks()
-
-    # Para controlar pantalla de muerte (tras animación)
     death_screen_start_time = None
-    death_screen_delay = 2  # Segundos que se mostrará "Has muerto"
+    death_screen_delay = 2
 
     while running:
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 running = False
 
-        # DETECTAR TECLA DE PAUSA
         keys = pygame.key.get_pressed()
         if keys[pygame.K_ESCAPE]:
-            # Hacemos una "foto" del juego en este momento
             pause_background = screen.copy()
-            # Mostramos el menú de pausa
             result = show_pause_menu(screen, pause_background)
             if result == "resume":
-                pass  # Reanudar sin cambios
+                pass
             elif result == "config":
-                # Ir a configuración usando el 'background' del menú principal
-                show_config_screen(screen)
+                music_volume, effects_volume = show_config_screen(screen, music_volume, effects_volume, all_sounds)
             elif result == "exit":
-                # Salir del juego (o podrías volver al menú principal)
                 running = False
 
-        # Acciones de jugador (f, etc.)
         if keys[pygame.K_e]:
             player.attack()
 
-        # Ataque con joystick (botón 1)
         try:
-            if joystick and joystick.get_button(4):  # Solo si el joystick está conectado
+            if joystick and joystick.get_button(4):
                 player.attack()
-        except pygame.error as e:
-            print(f"Error al acceder al joystick: {e}")
         except Exception as e:
-            print(f"Error inesperado: {e}")
+            print(f"Error en joystick: {e}")
 
-        # Lógica de jugador y enemigos
         player.update(collision_rects, enemies, map_width, map_height)
         camera.update(player.rect)
-        enemies.update(collision_rects)
+        for enemy in enemies:
+            enemy.update(collision_rects, player)
+            
+        consumables.update()
 
-        # Disminuir salud cada segundo
         current_time = pygame.time.get_ticks()
         if current_time - last_health_decrease >= 1000:
-            player.take_damage(health_decrease_rate)
+            player.take_damage(health_decrease_rate, play_sound=False)
             last_health_decrease = current_time
 
-        # Consumibles
         consumable_hits = pygame.sprite.spritecollide(player, consumables, True)
         for cons in consumable_hits:
             player.health = min(player.max_health, player.health + int(cons.health_value))
 
-        # Fin de nivel
         if level_end_rect and player.rect.colliderect(level_end_rect):
-            show_dialog_with_name(screen, "Athelia", "Por fin llegamos… cada paso ha dejado huella en ti.")
-            show_dialog_with_name(screen, "Protagonista", "Estoy agotado; la oscuridad y los combates me han drenado.")
-            show_dialog_with_name(screen, "Protagonista", "Sin alimentarme, mi energía se desvanece. ¿Cómo podré encontrar fuerzas para atacar?")
-            show_dialog_with_name(screen, "Athelia", "Ataca sin miedo, pero nunca olvides cuidar de ti. Una buena ración es tan vital como un golpe certero.")
+            show_dialog_with_name(screen, "Athelia", "Por fin llegamos… cada paso ha dejado huella en ti.", effects_volume=effects_volume)
+            show_dialog_with_name(screen, "Protagonista", "Estoy agotado; la oscuridad y los combates me han drenado.", effects_volume=effects_volume)
+            show_dialog_with_name(screen, "Protagonista", "Sin alimentarme, mi energía se desvanece. ¿Cómo podré encontrar fuerzas para atacar?", effects_volume=effects_volume)
+            show_dialog_with_name(screen, "Athelia", "Ataca sin miedo, pero nunca olvides cuidar de ti. Una buena ración es tan vital como un golpe certero.", effects_volume=effects_volume)
 
-            # Cargar siguiente nivel
+            # Cambiar nivel
+            current_level = "level2"
+            fade_music(GAME_MUSIC_LEVELS[current_level], 2000)
+
             tmx_data = load_map(NEXT_TMX_MAP_PATH)
             camera = Camera(
                 tmx_data.width * tmx_data.tilewidth,
@@ -265,11 +274,15 @@ def main():
             for enemy_data in get_enemy_spawns(tmx_data):
                 enemies.add(
                     Enemy(
+                       
                         x=enemy_data["x"],
                         y=enemy_data["y"],
                         enemy_type=enemy_data["type"],
                         speed=enemy_data["speed"],
-                        health=enemy_data["health"]
+                        health=enemy_data["health"],
+                        damage=enemy_data["attack"],   # <--
+                        effects_volume=effects_volume,
+                        all_sounds=all_sounds
                     )
                 )
 
@@ -286,65 +299,43 @@ def main():
                 )
             level_end_rect = get_level_end(tmx_data)
 
-        # ========================
-        #   RENDERIZADO (DRAW)
-        # ========================
         screen.fill((0, 0, 0))
 
-        # 1) Jugador vivo
         if not player.dead:
-            # Se dibuja el juego normalmente
             draw_tiled_map(screen, tmx_data, camera.x, camera.y)
             screen.blit(player.image, camera.apply(player.rect))
-            # player.draw_health_bar(screen, camera)
 
             for enemy in enemies:
                 screen.blit(enemy.image, camera.apply(enemy.rect))
-
             for cons in consumables:
                 screen.blit(cons.image, camera.apply(cons.rect))
 
-            # Rectángulo de ataque (depuración)
             if player.attack_rect:
                 attack_rect_camera = camera.apply(player.attack_rect)
                 pygame.draw.rect(screen, (255, 0, 0), attack_rect_camera, 2)
-
-            # Si el jugador vuelve a estar vivo, reseteamos el tiempo de pantalla de muerte
             death_screen_start_time = None
 
-        # 2) Jugador muerto pero animación NO termina
         elif not player.death_animation_finished:
-            # Se dibuja el juego para que se aprecie la animación de muerte
             draw_tiled_map(screen, tmx_data, camera.x, camera.y)
             screen.blit(player.image, camera.apply(player.rect))
 
-            # Si quieres que los enemigos sigan dibujándose, lo dejas
             for enemy in enemies:
                 screen.blit(enemy.image, camera.apply(enemy.rect))
-
-        # 3) Jugador muerto y animación terminada
         else:
-            # Pantalla negra y texto “¡Has muerto!”
-            font = pygame.font.Font(None, 36)
+            font = get_font(20)
             text_surface = font.render("Este es el sacrificio del destino...", True, (255, 0, 0))
-            text_rect = text_surface.get_rect(center=(screen.get_width()//2,
-                                                      screen.get_height()//2))
+            text_rect = text_surface.get_rect(center=(screen.get_width()//2, screen.get_height()//2))
             screen.blit(text_surface, text_rect)
 
-            # Controlar cuánto tiempo se muestra este texto
             if death_screen_start_time is None:
-                # Primer frame en el que entramos aquí
                 death_screen_start_time = pygame.time.get_ticks()
             else:
                 elapsed = (pygame.time.get_ticks() - death_screen_start_time) / 1000.0
                 if elapsed >= death_screen_delay:
-                    # Pasados X segundos, hacemos respawn
                     player.respawn()
-                    # Reiniciamos la variable para la próxima muerte
                     death_screen_start_time = None
 
-        # Dibujar el HUD
-        hud.draw(screen)  # Dibujar el HUD sobre el juego
+        hud.draw(screen)
 
         pygame.display.flip()
         clock.tick(60)

@@ -1,21 +1,31 @@
 import pygame
 import os
+import game_state
 
 class Player(pygame.sprite.Sprite):
-    def __init__(self, x, y):
+    def __init__(self, x, y, effects_volume=0.5, all_sounds=None):
         super().__init__()
         self.start_pos = (x, y)
 
+        if all_sounds is None:
+            all_sounds = []
+
         # Diccionario de animaciones
+
+        if game_state.chosen_character == "umbrielle":
+            base_path = "assets/cat_f"  # Cambia si usas otro nombre de carpeta
+        else:
+            base_path = "assets/cat_m"
+
         self.animations = {
-            "idle": self.load_frames("assets/cat_m/idle", scale_factor=1),
-            "left": self.load_frames("assets/cat_m/l", scale_factor=1),
-            "right": self.load_frames("assets/cat_m/r", scale_factor=1),
-            "jump_left": self.load_frames("assets/cat_m/jump_left", scale_factor=1),
-            "jump_right": self.load_frames("assets/cat_m/jump_right", scale_factor=1),
-            "death": self.load_frames("assets/cat_m/death", scale_factor=1),
-            "attack_left": self.load_frames("assets/cat_m/attack/left", scale_factor=1),
-            "attack_right": self.load_frames("assets/cat_m/attack/right", scale_factor=1)
+            "idle": self.load_frames(os.path.join(base_path, "idle"), scale_factor=1),
+            "left": self.load_frames(os.path.join(base_path, "l"), scale_factor=1),
+            "right": self.load_frames(os.path.join(base_path, "r"), scale_factor=1),
+            "jump_left": self.load_frames(os.path.join(base_path, "jump_left"), scale_factor=1),
+            "jump_right": self.load_frames(os.path.join(base_path, "jump_right"), scale_factor=1),
+            "death": self.load_frames(os.path.join(base_path, "death"), scale_factor=1),
+            "attack_left": self.load_frames(os.path.join(base_path, "attack/left"), scale_factor=1),
+            "attack_right": self.load_frames(os.path.join(base_path, "attack/right"), scale_factor=1)
         }
 
         # Estado inicial
@@ -55,6 +65,20 @@ class Player(pygame.sprite.Sprite):
         self.invulnerability_duration = 1000  # 1 segundo de invulnerabilidad
         self.last_damage_time = 0  # Último tiempo de daño en milisegundos
 
+        # Sonidos
+        self.sounds = {
+            "attack": pygame.mixer.Sound("assets/audio/effects/attack.mp3"),
+            "jump": pygame.mixer.Sound("assets/audio/effects/jump.mp3"),
+            "hurt": pygame.mixer.Sound("assets/audio/effects/hurt.mp3"),
+            "walk": pygame.mixer.Sound("assets/audio/effects/walk.mp3"),
+            "death": pygame.mixer.Sound("assets/audio/effects/death.mp3")
+        }
+
+        for sound in self.sounds.values():
+            sound.set_volume(effects_volume)
+            if all_sounds is not None:
+                all_sounds.append(sound)
+
         # Joystick
         self.joystick = None
         if pygame.joystick.get_count() > 0:
@@ -65,16 +89,17 @@ class Player(pygame.sprite.Sprite):
         """Carga y ordena los frames de forma numérica."""
         frames = []
         files = os.listdir(folder)
-        files.sort(key=lambda f: int(''.join(filter(str.isdigit, f))) 
+        files.sort(key=lambda f: int(''.join(filter(str.isdigit, f)))
                    if ''.join(filter(str.isdigit, f)) != "" else 0)
-        
+
         for filename in files:
             if filename.endswith(".png"):
                 path = os.path.join(folder, filename)
                 image = pygame.image.load(path).convert_alpha()
                 if scale_factor != 1:
                     width, height = image.get_size()
-                    new_size = (int(width * scale_factor), int(height * scale_factor))
+                    new_size = (int(width * scale_factor),
+                                int(height * scale_factor))
                     image = pygame.transform.scale(image, new_size)
                 frames.append(image)
 
@@ -90,6 +115,7 @@ class Player(pygame.sprite.Sprite):
         self.velocity_x = 0
         keys = pygame.key.get_pressed()
 
+        moving = False
         if keys[pygame.K_a]:
             self.velocity_x = -self.speed
             self.state = "left"
@@ -113,10 +139,17 @@ class Player(pygame.sprite.Sprite):
         if self.velocity_x == 0 and not self.attacking:
             self.state = "idle"
 
+        if moving and self.on_ground and not self.attacking:
+            if not pygame.mixer.Channel(1).get_busy():
+                pygame.mixer.Channel(1).play(self.sounds["walk"])
+        else:
+            pygame.mixer.Channel(1).stop()
+
         # Salto
         if (keys[pygame.K_SPACE] or (self.joystick and self.joystick.get_button(0))) and self.on_ground:
             self.velocity_y = self.jump_speed
             self.on_ground = False
+            self.sounds["jump"].play()
 
         # Gravedad
         self.velocity_y += self.gravity
@@ -141,10 +174,14 @@ class Player(pygame.sprite.Sprite):
         self.handle_collisions(collision_rects, "horizontal")
 
         # Limitar posición al mapa
+       
         self.rect.left = max(0, self.rect.left)
         self.rect.right = min(map_width, self.rect.right)
         self.rect.top = max(0, self.rect.top)
-        self.rect.bottom = min(map_height, self.rect.bottom)
+
+        fall_limit = map_height + 200
+        if self.rect.top > fall_limit:
+            self.die()
 
         # Animación
         self.animate()
@@ -178,33 +215,24 @@ class Player(pygame.sprite.Sprite):
         self.animation_timer += 1
         if self.animation_timer >= self.animation_speed:
             self.animation_timer = 0
-            self.current_frame = (self.current_frame + 1) % len(self.animations[self.state])
+            self.current_frame = (self.current_frame +
+                                  1) % len(self.animations[self.state])
             self.image = self.animations[self.state][self.current_frame]
 
-    def take_damage(self, amount):
+    def take_damage(self, amount, play_sound=False):
         """Reduce la salud del jugador."""
         current_time = pygame.time.get_ticks()
         if current_time - self.last_damage_time < self.invulnerability_duration:
             return
 
         self.health -= amount
+        if play_sound:
+            self.sounds["hurt"].play()
         self.last_damage_time = current_time
 
         if self.health <= 0:
             self.health = 0
             self.die()
-
-    # def draw_health_bar(self, surface, camera):
-    #     """Dibuja la barra de vida."""
-    #     applied_rect = camera.apply(self.rect)
-    #     bar_width = self.rect.width
-    #     bar_height = 5
-    #     bar_x = applied_rect.x
-    #     bar_y = applied_rect.y - 10
-
-    #     pygame.draw.rect(surface, (255, 0, 0), (bar_x, bar_y, bar_width, bar_height))
-    #     fill_width = int(bar_width * (self.health / self.max_health))
-    #     pygame.draw.rect(surface, (0, 255, 0), (bar_x, bar_y, fill_width, bar_height))
 
     def die(self):
         """Inicia la animación de muerte."""
@@ -215,6 +243,7 @@ class Player(pygame.sprite.Sprite):
             self.current_frame = 0
             self.animation_timer = 0
             self.death_start_time = pygame.time.get_ticks()
+            self.sounds["death"].play()
 
     def handle_death(self):
         """Maneja la animación de muerte."""
@@ -254,6 +283,7 @@ class Player(pygame.sprite.Sprite):
                 self.state = "attack_right"
             self.current_frame = 0
             self.animation_timer = 0
+            self.sounds["attack"].play()
 
     def handle_attack(self, enemy_group):
         """Maneja la animación y el daño del ataque."""

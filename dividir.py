@@ -22,7 +22,7 @@ def dividir_sprite(sheet_path, filas, columnas, ancho, alto, salida="frames"):
     print(f"¡Frames guardados correctamente en {salida}/!")
 
 # Ruta del archivo (Asegúrate de que esté en la misma carpeta o coloca la ruta completa)
-sprite_path = "AttackCatbL.png"
+sprite_path = "AttackCatt.png"
 
 
 # Ajustar según las dimensiones de tu sprite sheet
