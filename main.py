@@ -11,7 +11,7 @@ from tilemap import draw_tiled_map, get_player_spawn
 from player import Player
 from camera import Camera
 from intro import show_intro_scenes
-from enemies import Enemy
+from enemies import Enemy, MiniBoss
 from consumable import Consumable
 from dialog import show_dialog_with_name
 from hud import HUD
@@ -258,7 +258,9 @@ def main():
         
         for enemy in level_data["enemies"]:
             enemy.update(level_data["collision_rects"], player)
-            
+
+
+
         level_data["consumables"].update()
 
         # Pérdida de salud progresiva
@@ -323,6 +325,9 @@ def main():
             
             for enemy in level_data["enemies"]:
                 screen.blit(enemy.image, level_data["camera"].apply(enemy.rect))
+
+                if isinstance(enemy, MiniBoss):
+                    enemy.draw_health_bar(screen, level_data["camera"])
                 
             for cons in level_data["consumables"]:
                 screen.blit(cons.image, level_data["camera"].apply(cons.rect))
