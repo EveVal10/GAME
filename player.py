@@ -64,6 +64,11 @@ class Player(pygame.sprite.Sprite):
         self.health = self.max_health
         self.invulnerability_duration = 1000  # 1 segundo de invulnerabilidad
         self.last_damage_time = 0  # Último tiempo de daño en milisegundos
+        
+        
+        self.has_energy = False
+        self.energy_max_time = 10  # duración del poder en segundos
+        self.energy_timer = 0      # cuenta regresiva
 
         # Sonidos
         self.sounds = {
@@ -191,7 +196,13 @@ class Player(pygame.sprite.Sprite):
             self.handle_attack(enemy_group)
         else:
             self.attack_rect = None
-
+            
+        if self.has_energy:
+              self.energy_timer -= 1 / 160  # Suponiendo que el juego corre a 60 FPS
+              if self.energy_timer <= 0:
+                  self.has_energy = False
+                  self.energy_timer = 0    
+           
     def handle_collisions(self, collision_rects, direction):
         """Maneja colisiones con el entorno."""
         for rect in collision_rects:

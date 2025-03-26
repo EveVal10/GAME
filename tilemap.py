@@ -85,17 +85,46 @@ def get_level_end(tmx_data):
     return None
 
 def get_npc_data(tmx_data):
-    """Obtiene datos de NPCs del tilemap"""
+    """Obtiene datos de NPCs del tilemap con sus propiedades listas para usar."""
     npcs = []
     for layer in tmx_data.layers:
         if isinstance(layer, pytmx.TiledObjectGroup) and layer.name == "NPCs":
             for obj in layer:
                 if obj.type == "npc":
+                    x = obj.x
+                    y = obj.y
+                    w = obj.width
+                    h = obj.height
+                    
+                    # Opcionales: npc_type y speaker
+                    npc_type = obj.properties.get("npc_type", "villager")
+                    speaker = obj.properties.get("speaker", "NPC")
+
+                    # Recolectar múltiples diálogos (dialogue1, dialogue2, etc.)
+                    # Aquí asumimos un máximo de 5, pero puedes cambiarlo.
+                    dialogue_blocks = []
+                    for i in range(1, 11):  # 1..5
+                        key = f"dialogue{i}"
+                        if key in obj.properties:
+                            raw_dialogue = obj.properties[key]  # Ej. "Hola|Adiós"
+                            dialogue_blocks.append(raw_dialogue)
+
+                    # Si no se encontraron dialogue1..dialogue5,
+                    # quizá tomar la propiedad "dialogue" como fallback.
+                    if not dialogue_blocks:
+                        single_dialogue = obj.properties.get("dialogue", "")
+                        if single_dialogue:
+                            dialogue_blocks.append(single_dialogue)
+
+                    # Guardamos toda la info en un dict
                     npcs.append({
-                        "x": obj.x,
-                        "y": obj.y,
-                        "width": obj.width,
-                        "height": obj.height,
-                        "properties": obj.properties
+                        "x": x,
+                        "y": y,
+                        "width": w,
+                        "height": h,
+                        "npc_type": npc_type,
+                        "speaker": speaker,
+                        "dialogue_blocks": dialogue_blocks
                     })
+
     return npcs

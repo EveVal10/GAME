@@ -17,6 +17,7 @@ from dialog import show_dialog_with_name
 from hud import HUD
 from utils import get_font
 from levels import load_level_data  # Nueva importación
+from projectile import EnergyProjectile
 
 # Configuración de assets
 BACKGROUND_IMAGE = "assets/screen/background.png"
@@ -25,6 +26,8 @@ INTRO_MUSIC = "assets/audio/game/intro_music.mp3"
 
 LOGO_1 = "assets/logo/logoUTCJ.png"
 LOGO_2 = "assets/logo/logo.png"
+
+CAMP_IMAGE_PATH = "assets/intro/sleeping.png"  # Cambia la ruta según tu proyecto
 
 def fade_music(new_music, fade_time=2000):
     """Realiza un fade entre la música actual y la nueva."""
@@ -82,6 +85,54 @@ def show_logo(screen, logo_path, fade_in_time=2000, display_time=4000, fade_out_
 def actualizar_volumen_efectos(volumen, all_sounds):
     for sonido in all_sounds:
         sonido.set_volume(volumen)
+        
+
+def show_camp_scene(screen, camp_image, duration=3000):
+    """
+    Muestra la imagen de 'campamento' a pantalla completa por 'duration' milisegundos,
+    antes de continuar con la carga del siguiente nivel.
+    """
+    screen.blit(camp_image, (0, 0))
+    pygame.display.flip()
+    pygame.time.delay(duration) 
+    
+def wait_for_any_key():
+    """Espera hasta que se pulse cualquier tecla."""
+    while True:
+        for event in pygame.event.get():
+            if event.type == pygame.KEYDOWN:
+                return event.key
+        pygame.time.delay(50)
+        
+def show_full_conversation(npc, screen):
+    """
+    Muestra TODOS los bloques de diálogo del NPC, línea por línea.
+    Cada vez que se pulsa cualquier tecla se avanza.
+    Al terminar todos los bloques, muestra un mensaje final y espera
+    una pulsación para cerrar la conversación.
+    """
+    # Recorre todos los bloques restantes
+    while npc.current_block < len(npc.dialogue_blocks):
+        npc.start_dialogue_block(npc.current_block)
+        
+        # Mientras haya líneas en el bloque actual, las muestra
+        while npc.is_talking:
+            line = npc.get_current_line()
+            if line is None:
+                # Si ya no hay más líneas, se llama a end_dialogue() y se sale
+                break
+            
+            show_dialog_with_name(screen, npc.speaker, line)
+            wait_for_any_key()  # Espera que el jugador pulse para pasar a la siguiente línea
+            npc.advance_dialogue()
+    
+    # Cuando ya no hay más bloques, muestra un mensaje final (opcional)
+    show_dialog_with_name(screen, npc.speaker, "Fin del diálogo. Pulsa cualquier tecla para continuar.")
+    wait_for_any_key()
+    npc.reset_dialogue()
+        
+
+                  
 
 def main():
     pygame.init()
@@ -127,8 +178,10 @@ def main():
     # Inicialización del juego
     current_level = "level1"
     level_data = load_level_data(current_level, None, effects_volume, all_sounds)
-    
+    npcs = level_data["npcs"]
     player = Player(x=level_data["player_spawn"][0], y=level_data["player_spawn"][1], effects_volume=effects_volume, all_sounds=all_sounds)
+    
+   
     
     fade_music(level_data["music"], 2000)
     hud = HUD(player)
@@ -136,6 +189,9 @@ def main():
     # Mostrar diálogo inicial del nivel
     for dialogue in level_data["spawn_dialogue"]:
         show_dialog_with_name(screen, dialogue["speaker"], dialogue["text"])
+        
+    camp_image = pygame.image.load(CAMP_IMAGE_PATH).convert()
+    camp_image = pygame.transform.scale(camp_image, (640, 480))
 
     clock = pygame.time.Clock()
     running = True
@@ -143,31 +199,40 @@ def main():
     last_health_decrease = pygame.time.get_ticks()
     death_screen_start_time = None
     death_screen_delay = 2
+    
+    projectiles = pygame.sprite.Group()  # Si estás usando un grupo de sprites de pygame
+    
+    
 
     while running:
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 running = False
 
-        keys = pygame.key.get_pressed()
-        if keys[pygame.K_ESCAPE]:
-            pause_background = screen.copy()
-            result = show_pause_menu(screen, pause_background)
-            if result == "resume":
-                pass
-            elif result == "config":
-                music_volume, effects_volume = show_config_screen(screen, music_volume, effects_volume, all_sounds)
-                actualizar_volumen_efectos(effects_volume, all_sounds)
-            elif result == "exit":
-                running = False
-
-        if keys[pygame.K_e]:
-            player.attack()
-            # Verificar interacción con NPCs
-            for npc in level_data["npc_dialogues"]:
-                if player.rect.colliderect(npc["rect"]):
-                    for line in npc["lines"]:
-                        show_dialog_with_name(screen, npc["speaker"], line)
+            elif event.type == pygame.KEYDOWN:
+                if event.key == pygame.K_ESCAPE:
+                    pause_background = screen.copy()
+                    result = show_pause_menu(screen, pause_background)
+                    if result == "resume":
+                        pass
+                    elif result == "config":
+                        music_volume, effects_volume = show_config_screen(screen, music_volume, effects_volume, all_sounds)
+                        actualizar_volumen_efectos(effects_volume, all_sounds)
+                    elif result == "exit":
+                        running = False
+        
+                elif event.key == pygame.K_e:
+                    player.attack()
+                    # Verificar interacción con NPCs una sola vez
+                    for npc in level_data["npcs"]:
+                        if player.rect.colliderect(npc.rect):
+                            show_full_conversation(npc, screen)
+                            break
+                elif event.key == pygame.K_x and player.has_energy:
+                   direction = 1 if player.last_direction == "right" else -1
+                   projectile = EnergyProjectile(player.rect.centerx, player.rect.centery, direction)
+                   projectiles.add(projectile)
+        
 
         try:
             if joystick and joystick.get_button(4):
@@ -179,6 +244,17 @@ def main():
         player.update(level_data["collision_rects"], level_data["enemies"], 
                      level_data["map_width"], level_data["map_height"])
         level_data["camera"].update(player.rect)
+        
+       
+        
+        for projectile in projectiles:
+            projectile.update(level_data["map_width"], level_data["map_height"], level_data["collision_rects"])
+            
+        for projectile in projectiles:
+           for enemy in level_data["enemies"]:
+               if projectile.rect.colliderect(enemy.rect):
+                   enemy.take_damage(projectile.damage, knockback_direction=projectile.direction)
+                   projectile.kill()  # El proyectil desaparece al colisionar     
         
         for enemy in level_data["enemies"]:
             enemy.update(level_data["collision_rects"], player)
@@ -194,7 +270,12 @@ def main():
         # Recolectar consumibles
         consumable_hits = pygame.sprite.spritecollide(player, level_data["consumables"], True)
         for cons in consumable_hits:
-            player.health = min(player.max_health, player.health + int(cons.health_value))
+          if getattr(cons, "consumable_type", "") == "energy_orb":
+              player.has_energy = True
+              player.energy_timer = player.energy_max_time
+              # Aquí puedes poner una animación, sonido o efecto si quieres
+          else:
+              player.health = min(player.max_health, player.health + int(cons.health_value))
 
         # Cambio de nivel
         if (level_data["level_end_rect"] and 
@@ -203,6 +284,8 @@ def main():
             # Mostrar diálogos de fin de nivel
             for dialogue in level_data["end_dialogue"]:
                 show_dialog_with_name(screen, dialogue["speaker"], dialogue["text"])
+             
+            show_camp_scene(screen, camp_image, duration=3000)    
             
             if level_data["next_level"]:
                 current_level = level_data["next_level"]
@@ -232,10 +315,21 @@ def main():
                          level_data["camera"].x, level_data["camera"].y)
             screen.blit(player.image, level_data["camera"].apply(player.rect))
             
+            
+            for npc in level_data["npcs"]:
+             
+                npc.update(level_data["collision_rects"])
+                screen.blit(npc.image, level_data["camera"].apply(npc.rect))
+            
             for enemy in level_data["enemies"]:
                 screen.blit(enemy.image, level_data["camera"].apply(enemy.rect))
+                
             for cons in level_data["consumables"]:
                 screen.blit(cons.image, level_data["camera"].apply(cons.rect))
+            
+            for p in projectiles:
+                screen.blit(p.image, level_data["camera"].apply(p.rect))
+    
                 
             if player.attack_rect:
                 attack_rect_camera = level_data["camera"].apply(player.attack_rect)
