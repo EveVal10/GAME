@@ -5,7 +5,6 @@ from utils import get_font
 
 # Inicialización de Pygame
 pygame.init()
-
 # Inicialización del joystick
 pygame.joystick.init()
 if pygame.joystick.get_count() > 0:
@@ -17,11 +16,13 @@ else:
     print("No se detectó ningún joystick.")
 
 # Mapeo de botones del joystick
-JOYSTICK_BUTTON_A = 3  # Botón A (confirmar/seleccionar)
+JOYSTICK_BUTTON_A = 0  # Botón A (confirmar/seleccionar) - Normalmente 0 en muchos joysticks
 JOYSTICK_BUTTON_B = 1  # Botón B (retroceder/cancelar)
+JOYSTICK_BUTTON_START = 7  # Botón Start/Menu
 
 # Variables para controlar el movimiento del joystick
 joystick_delay = 0.2  # Retardo en segundos para evitar movimientos rápidos
+last_joystick_move_time = 0
 
 def show_screen(screen, text, duration=3000, font_size=50):
     screen.fill((0, 0, 0))
@@ -66,9 +67,25 @@ def blur_surface(surface, factor=0.1):
     small_surface = pygame.transform.smoothscale(surface, small_size)
     return pygame.transform.smoothscale(small_surface, (width, height))
 
-def show_config_screen(screen, music_volume, effects_volume, all_sounds):
-    last_joystick_time = time.time()
+def handle_joystick_movement(current_index, option_count):
+    global last_joystick_move_time
+    current_time = time.time()
+    
+    if current_time - last_joystick_move_time > joystick_delay:
+        # Eje vertical (eje 1 en muchos joysticks)
+        if abs(joystick.get_axis(1)) > 0.5:
+            if joystick.get_axis(1) < -0.5:  # Movimiento hacia arriba
+                new_index = (current_index - 1) % option_count
+            else:  # Movimiento hacia abajo
+                new_index = (current_index + 1) % option_count
+            last_joystick_move_time = current_time
+            return new_index
+    
+    return current_index
 
+def show_config_screen(screen, music_volume, effects_volume, all_sounds):
+    global last_joystick_move_time
+    
     game_screen = screen.copy()
     blurred_background = blur_surface(game_screen, factor=0.1)
     overlay = pygame.Surface(screen.get_size(), pygame.SRCALPHA)
@@ -139,40 +156,65 @@ def show_config_screen(screen, music_volume, effects_volume, all_sounds):
                         for sound in all_sounds:
                             sound.set_volume(effects_volume)
 
-            # Joystick (opcional, mismo patrón que arriba pero usando joystick)
+            # Control con joystick
             if joystick:
+                # Navegación con eje vertical o D-Pad
                 if event.type == pygame.JOYAXISMOTION:
-                    if event.axis == 1:
-                        current_time = time.time()
-                        if event.value < -0.5 and current_time - last_joystick_time > joystick_delay:
-                            selected_index = (selected_index - 1) % len(options)
-                            last_joystick_time = current_time
-                        elif event.value > 0.5 and current_time - last_joystick_time > joystick_delay:
-                            selected_index = (selected_index + 1) % len(options)
-                            last_joystick_time = current_time
-                    if event.axis == 0:
-                        if options[selected_index] == "Volumen Música":
-                            if event.value < -0.5:
+                    if event.axis == 1:  # Eje vertical
+                        selected_index = handle_joystick_movement(selected_index, len(options))
+                
+                if event.type == pygame.JOYHATMOTION:
+                    if event.value[1] == 1:  # D-Pad arriba
+                        selected_index = (selected_index - 1) % len(options)
+                    elif event.value[1] == -1:  # D-Pad abajo
+                        selected_index = (selected_index + 1) % len(options)
+                
+                # Ajuste de volúmenes con eje horizontal
+                if event.type == pygame.JOYAXISMOTION and event.axis == 0:
+                    if options[selected_index] in ["Volumen Música", "Volumen Efectos"]:
+                        if event.value < -0.5:  # Izquierda
+                            if options[selected_index] == "Volumen Música":
                                 music_volume = max(0, music_volume - 0.05)
                                 pygame.mixer.music.set_volume(music_volume)
-                            elif event.value > 0.5:
+                            else:
+                                effects_volume = max(0, effects_volume - 0.05)
+                                for sound in all_sounds:
+                                    sound.set_volume(effects_volume)
+                        elif event.value > 0.5:  # Derecha
+                            if options[selected_index] == "Volumen Música":
                                 music_volume = min(1, music_volume + 0.05)
                                 pygame.mixer.music.set_volume(music_volume)
-                        elif options[selected_index] == "Volumen Efectos":
-                            if event.value < -0.5:
-                                effects_volume = max(0, effects_volume - 0.05)
-                            elif event.value > 0.5:
+                            else:
                                 effects_volume = min(1, effects_volume + 0.05)
-                            for sound in all_sounds:
-                                sound.set_volume(effects_volume)
+                                for sound in all_sounds:
+                                    sound.set_volume(effects_volume)
+                
+                # Confirmación con botón A
+                if event.type == pygame.JOYBUTTONDOWN:
+                    if event.button == JOYSTICK_BUTTON_A:
+                        if options[selected_index] == "Silenciar Música":
+                            music_volume = 0 if music_volume > 0 else 0.5
+                            pygame.mixer.music.set_volume(music_volume)
+                        elif options[selected_index] == "Pantalla Completa":
+                            pygame.display.toggle_fullscreen()
+                        elif options[selected_index] == "Volver":
+                            running = False
+                    
+                    # Volver con botón B
+                    elif event.button == JOYSTICK_BUTTON_B:
+                        running = False
+
+        # También verificamos el estado del joystick continuamente (no solo en eventos)
+        if joystick:
+            selected_index = handle_joystick_movement(selected_index, len(options))
 
         clock.tick(30)
 
     return music_volume, effects_volume
 
 def show_menu(screen, background, music_volume, effects_volume, all_sounds):
-    last_joystick_time = time.time()
-
+    global last_joystick_move_time
+    
     font = get_font(20)
     options = ["Jugar", "Configuración", "Salir"]
     selected_index = 0
@@ -206,9 +248,22 @@ def show_menu(screen, background, music_volume, effects_volume, all_sounds):
                     elif options[selected_index] == "Salir":
                         return False
                     elif options[selected_index] == "Configuración":
-                        show_config_screen(screen, music_volume, effects_volume, all_sounds)
+                        music_volume, effects_volume = show_config_screen(screen, music_volume, effects_volume, all_sounds)
 
+            # Control con joystick
             if joystick:
+                # Navegación con eje vertical o D-Pad
+                if event.type == pygame.JOYAXISMOTION:
+                    if event.axis == 1:  # Eje vertical
+                        selected_index = handle_joystick_movement(selected_index, len(options))
+                
+                if event.type == pygame.JOYHATMOTION:
+                    if event.value[1] == 1:  # D-Pad arriba
+                        selected_index = (selected_index - 1) % len(options)
+                    elif event.value[1] == -1:  # D-Pad abajo
+                        selected_index = (selected_index + 1) % len(options)
+                
+                # Confirmación con botón A
                 if event.type == pygame.JOYBUTTONDOWN:
                     if event.button == JOYSTICK_BUTTON_A:
                         if options[selected_index] == "Jugar":
@@ -216,7 +271,16 @@ def show_menu(screen, background, music_volume, effects_volume, all_sounds):
                         elif options[selected_index] == "Salir":
                             return False
                         elif options[selected_index] == "Configuración":
-                            show_config_screen(screen, music_volume, effects_volume, all_sounds)
+                            music_volume, effects_volume = show_config_screen(screen, music_volume, effects_volume, all_sounds)
+                    
+                    # Volver con botón B (en menú principal no hace nada o podría salir)
+                    elif event.button == JOYSTICK_BUTTON_B:
+                        if options[selected_index] == "Salir":
+                            return False
+
+        # También verificamos el estado del joystick continuamente (no solo en eventos)
+        if joystick:
+            selected_index = handle_joystick_movement(selected_index, len(options))
 
         clock.tick(30)
 
@@ -246,8 +310,8 @@ def fade_out(screen, duration):
         clock.tick(60)
 
 def show_pause_menu(screen, background):
-    last_joystick_time = time.time()  # Inicializar con el tiempo actual
-
+    global last_joystick_move_time
+    
     font = get_font(20)
     options = ["Reanudar", "Configuración", "Salir"]
     selected_index = 0
@@ -276,7 +340,7 @@ def show_pause_menu(screen, background):
                 pygame.quit()
                 sys.exit()
 
-            # Manejo de eventos de teclado y joystick
+            # Manejo de eventos de teclado
             if event.type == pygame.KEYDOWN:
                 if event.key == pygame.K_UP:
                     selected_index = (selected_index - 1) % len(options)
@@ -290,24 +354,25 @@ def show_pause_menu(screen, background):
                         return "config"
                     elif chosen == "Salir":
                         return "exit"
+                elif event.key == pygame.K_ESCAPE:
+                    return "resume"
 
+            # Manejo de eventos de joystick
             if joystick:
+                # Navegación con eje vertical o D-Pad
                 if event.type == pygame.JOYAXISMOTION:
-                    # Eje vertical (eje 1 en muchos joysticks)
-                    if event.axis == 1:
-                        if event.value < -0.5:  # Movimiento hacia arriba
-                            current_time = time.time()
-                            if current_time - last_joystick_time > joystick_delay:
-                                selected_index = (selected_index - 1) % len(options)
-                                last_joystick_time = current_time
-                        elif event.value > 0.5:  # Movimiento hacia abajo
-                            current_time = time.time()
-                            if current_time - last_joystick_time > joystick_delay:
-                                selected_index = (selected_index + 1) % len(options)
-                                last_joystick_time = current_time
-
+                    if event.axis == 1:  # Eje vertical
+                        selected_index = handle_joystick_movement(selected_index, len(options))
+                
+                if event.type == pygame.JOYHATMOTION:
+                    if event.value[1] == 1:  # D-Pad arriba
+                        selected_index = (selected_index - 1) % len(options)
+                    elif event.value[1] == -1:  # D-Pad abajo
+                        selected_index = (selected_index + 1) % len(options)
+                
+                # Confirmación con botón A
                 if event.type == pygame.JOYBUTTONDOWN:
-                    if event.button == JOYSTICK_BUTTON_A:  # Botón A (confirmar)
+                    if event.button == JOYSTICK_BUTTON_A:
                         chosen = options[selected_index]
                         if chosen == "Reanudar":
                             return "resume"
@@ -315,14 +380,14 @@ def show_pause_menu(screen, background):
                             return "config"
                         elif chosen == "Salir":
                             return "exit"
-                    elif event.button == JOYSTICK_BUTTON_B:  # Botón B (retroceder)
+                    
+                    # Volver con botón B o Start
+                    elif event.button in [JOYSTICK_BUTTON_B, JOYSTICK_BUTTON_START]:
                         return "resume"
 
-                if event.type == pygame.JOYHATMOTION:
-                    if event.value == (0, 1):  # D-Pad arriba
-                        selected_index = (selected_index - 1) % len(options)
-                    elif event.value == (0, -1):  # D-Pad abajo
-                        selected_index = (selected_index + 1) % len(options)
+        # También verificamos el estado del joystick continuamente (no solo en eventos)
+        if joystick:
+            selected_index = handle_joystick_movement(selected_index, len(options))
 
         clock.tick(30)
 
@@ -334,8 +399,13 @@ def main():
     background = pygame.image.load("assets/screen/background.png").convert()
     background = pygame.transform.scale(background, (640, 480))
 
+    # Volúmenes iniciales
+    music_volume = 0.5
+    effects_volume = 0.5
+    all_sounds = []  # Lista de efectos de sonido del juego
+
     # Mostrar menú
-    if not show_menu(screen, background):
+    if not show_menu(screen, background, music_volume, effects_volume, all_sounds):
         pygame.quit()
         return
 

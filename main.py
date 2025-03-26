@@ -16,7 +16,7 @@ from consumable import Consumable
 from dialog import show_dialog_with_name
 from hud import HUD
 from utils import get_font
-from levels import load_level_data  # Nueva importación
+from levels import load_level_data
 from projectile import EnergyProjectile
 
 # Configuración de assets
@@ -27,7 +27,14 @@ INTRO_MUSIC = "assets/audio/game/intro_music.mp3"
 LOGO_1 = "assets/logo/logoUTCJ.png"
 LOGO_2 = "assets/logo/logo.png"
 
-CAMP_IMAGE_PATH = "assets/intro/sleeping.png"  # Cambia la ruta según tu proyecto
+JOYSTICK_BUTTON_A = 0
+JOYSTICK_BUTTON_B = 1
+JOYSTICK_BUTTON_X = 2  # Botón X para interactuar con NPCs
+JOYSTICK_BUTTON_START = 6  # Botón Start para pausar
+
+joystick = None
+
+CAMP_IMAGE_PATH = "assets/intro/sleeping.png"
 
 def fade_music(new_music, fade_time=2000):
     """Realiza un fade entre la música actual y la nueva."""
@@ -83,9 +90,9 @@ def show_logo(screen, logo_path, fade_in_time=2000, display_time=4000, fade_out_
         pygame.time.delay(fade_out_time // 50)
         
 def actualizar_volumen_efectos(volumen, all_sounds):
+    """Actualiza el volumen de todos los efectos de sonido."""
     for sonido in all_sounds:
         sonido.set_volume(volumen)
-        
 
 def show_camp_scene(screen, camp_image, duration=3000):
     """
@@ -95,44 +102,76 @@ def show_camp_scene(screen, camp_image, duration=3000):
     screen.blit(camp_image, (0, 0))
     pygame.display.flip()
     pygame.time.delay(duration) 
-    
+
 def wait_for_any_key():
-    """Espera hasta que se pulse cualquier tecla."""
+    """Espera hasta que se pulse cualquier tecla o un botón del joystick."""
     while True:
         for event in pygame.event.get():
-            if event.type == pygame.KEYDOWN:
-                return event.key
+            if event.type == pygame.KEYDOWN or event.type == pygame.JOYBUTTONDOWN:
+                return
         pygame.time.delay(50)
-        
+
 def show_full_conversation(npc, screen):
     """
     Muestra TODOS los bloques de diálogo del NPC, línea por línea.
-    Cada vez que se pulsa cualquier tecla se avanza.
-    Al terminar todos los bloques, muestra un mensaje final y espera
-    una pulsación para cerrar la conversación.
+    Se avanza con cualquier tecla o botón del joystick.
     """
-    # Recorre todos los bloques restantes
     while npc.current_block < len(npc.dialogue_blocks):
         npc.start_dialogue_block(npc.current_block)
         
-        # Mientras haya líneas en el bloque actual, las muestra
         while npc.is_talking:
             line = npc.get_current_line()
             if line is None:
-                # Si ya no hay más líneas, se llama a end_dialogue() y se sale
                 break
             
             show_dialog_with_name(screen, npc.speaker, line)
-            wait_for_any_key()  # Espera que el jugador pulse para pasar a la siguiente línea
+            wait_for_any_key()  
             npc.advance_dialogue()
     
-    # Cuando ya no hay más bloques, muestra un mensaje final (opcional)
-    show_dialog_with_name(screen, npc.speaker, "Fin del diálogo. Pulsa cualquier tecla para continuar.")
-    wait_for_any_key()
     npc.reset_dialogue()
-        
 
-                  
+def handle_joystick_input(joystick, player, projectiles, level_data, screen):
+    """Maneja la entrada del joystick para el jugador."""
+    if not joystick:
+        return
+
+    # Movimiento horizontal
+    axis_x = joystick.get_axis(0)
+    if abs(axis_x) > 0.5:
+        player.velocity_x = axis_x * player.speed
+        if axis_x < 0:
+            player.last_direction = "left"
+        else:
+            player.last_direction = "right"
+    else:
+        player.velocity_x = 0
+
+    # Botones
+    for i in range(joystick.get_numbuttons()):
+        if joystick.get_button(i):
+            if i == JOYSTICK_BUTTON_A:
+                # Implementación compatible con tu sistema actual
+                if player.on_ground and not player.dead:
+                    player.velocity_y = player.jump_speed
+                    player.on_ground = False
+                    player.sounds["jump"].play()
+                    if player.last_direction == "left":
+                        player.state = "jump_left"
+                    else:
+                        player.state = "jump_right"
+                    player.current_frame = 0
+                        
+            elif i == JOYSTICK_BUTTON_B and player.has_energy:
+                direction = 1 if player.last_direction == "right" else -1
+                projectile = EnergyProjectile(player.rect.centerx, player.rect.centery, direction)
+                projectiles.add(projectile)
+            elif i == JOYSTICK_BUTTON_X:
+                for npc in level_data["npcs"]:
+                    if player.rect.colliderect(npc.rect):
+                        show_full_conversation(npc, screen)
+                        break
+            elif i == JOYSTICK_BUTTON_START:
+                return "pause"
 
 def main():
     pygame.init()
@@ -178,10 +217,8 @@ def main():
     # Inicialización del juego
     current_level = "level1"
     level_data = load_level_data(current_level, None, effects_volume, all_sounds)
-    npcs = level_data["npcs"]
-    player = Player(x=level_data["player_spawn"][0], y=level_data["player_spawn"][1], effects_volume=effects_volume, all_sounds=all_sounds)
-    
-   
+    player = Player(x=level_data["player_spawn"][0], y=level_data["player_spawn"][1], 
+                   effects_volume=effects_volume, all_sounds=all_sounds)
     
     fade_music(level_data["music"], 2000)
     hud = HUD(player)
@@ -200,9 +237,7 @@ def main():
     death_screen_start_time = None
     death_screen_delay = 2
     
-    projectiles = pygame.sprite.Group()  # Si estás usando un grupo de sprites de pygame
-    
-    
+    projectiles = pygame.sprite.Group()
 
     while running:
         for event in pygame.event.get():
@@ -210,51 +245,59 @@ def main():
                 running = False
 
             elif event.type == pygame.KEYDOWN:
+                # Pausa con tecla ESC
                 if event.key == pygame.K_ESCAPE:
                     pause_background = screen.copy()
                     result = show_pause_menu(screen, pause_background)
                     if result == "resume":
-                        pass
+                        continue
                     elif result == "config":
                         music_volume, effects_volume = show_config_screen(screen, music_volume, effects_volume, all_sounds)
                         actualizar_volumen_efectos(effects_volume, all_sounds)
                     elif result == "exit":
                         running = False
-        
+
+                # Interacción con NPCs con tecla E
                 elif event.key == pygame.K_e:
-                    player.attack()
-                    # Verificar interacción con NPCs una sola vez
                     for npc in level_data["npcs"]:
                         if player.rect.colliderect(npc.rect):
                             show_full_conversation(npc, screen)
                             break
-                elif event.key == pygame.K_x and player.has_energy:
-                   direction = 1 if player.last_direction == "right" else -1
-                   projectile = EnergyProjectile(player.rect.centerx, player.rect.centery, direction)
-                   projectiles.add(projectile)
-        
 
-        try:
-            if joystick and joystick.get_button(4):
-                player.attack()
-        except Exception as e:
-            print(f"Error en joystick: {e}")
+                # Disparo de proyectiles con tecla X
+                elif event.key == pygame.K_x and player.has_energy:
+                    direction = 1 if player.last_direction == "right" else -1
+                    projectile = EnergyProjectile(player.rect.centerx, player.rect.centery, direction)
+                    projectiles.add(projectile)
+
+        # Manejo del joystick
+                # En el bucle principal del juego:
+            # En el bucle principal del juego:
+            if joystick:
+                result = handle_joystick_input(joystick, player, projectiles, level_data, screen)
+                if result == "pause":
+                    pause_background = screen.copy()
+                    result = show_pause_menu(screen, pause_background)
+                    if result == "resume":
+                        continue
+                    elif result == "config":
+                        music_volume, effects_volume = show_config_screen(screen, music_volume, effects_volume, all_sounds)
+                        actualizar_volumen_efectos(effects_volume, all_sounds)
+                    elif result == "exit":
+                        running = False
 
         # Actualizaciones
         player.update(level_data["collision_rects"], level_data["enemies"], 
                      level_data["map_width"], level_data["map_height"])
         level_data["camera"].update(player.rect)
         
-       
-        
-        for projectile in projectiles:
-            projectile.update(level_data["map_width"], level_data["map_height"], level_data["collision_rects"])
+        projectiles.update(level_data["map_width"], level_data["map_height"], level_data["collision_rects"])
             
         for projectile in projectiles:
-           for enemy in level_data["enemies"]:
-               if projectile.rect.colliderect(enemy.rect):
-                   enemy.take_damage(projectile.damage, knockback_direction=projectile.direction)
-                   projectile.kill()  # El proyectil desaparece al colisionar     
+            for enemy in level_data["enemies"]:
+                if projectile.rect.colliderect(enemy.rect):
+                    enemy.take_damage(projectile.damage, knockback_direction=projectile.direction)
+                    projectile.kill()
         
         for enemy in level_data["enemies"]:
             enemy.update(level_data["collision_rects"], player)
@@ -270,12 +313,11 @@ def main():
         # Recolectar consumibles
         consumable_hits = pygame.sprite.spritecollide(player, level_data["consumables"], True)
         for cons in consumable_hits:
-          if getattr(cons, "consumable_type", "") == "energy_orb":
-              player.has_energy = True
-              player.energy_timer = player.energy_max_time
-              # Aquí puedes poner una animación, sonido o efecto si quieres
-          else:
-              player.health = min(player.max_health, player.health + int(cons.health_value))
+            if getattr(cons, "consumable_type", "") == "energy_orb":
+                player.has_energy = True
+                player.energy_timer = player.energy_max_time
+            else:
+                player.health = min(player.max_health, player.health + int(cons.health_value))
 
         # Cambio de nivel
         if (level_data["level_end_rect"] and 
@@ -290,12 +332,9 @@ def main():
             if level_data["next_level"]:
                 current_level = level_data["next_level"]
                 level_data = load_level_data(current_level, player, effects_volume, all_sounds)
-
-
-                player.rect.topleft = level_data["player_spawn"]  # Actualizar posición
-                player.health = player.max_health  # Resetear salud
-                player.dead = False  # Asegurar que no está en estado muerto
-
+                player.rect.topleft = level_data["player_spawn"]
+                player.health = player.max_health
+                player.dead = False
 
                 fade_music(level_data["music"], 2000)
                 
@@ -315,9 +354,7 @@ def main():
                          level_data["camera"].x, level_data["camera"].y)
             screen.blit(player.image, level_data["camera"].apply(player.rect))
             
-            
             for npc in level_data["npcs"]:
-             
                 npc.update(level_data["collision_rects"])
                 screen.blit(npc.image, level_data["camera"].apply(npc.rect))
             
@@ -330,7 +367,6 @@ def main():
             for p in projectiles:
                 screen.blit(p.image, level_data["camera"].apply(p.rect))
     
-                
             if player.attack_rect:
                 attack_rect_camera = level_data["camera"].apply(player.attack_rect)
                 pygame.draw.rect(screen, (255, 0, 0), attack_rect_camera, 2)
