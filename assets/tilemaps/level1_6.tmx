@@ -1,0 +1,138 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<map version="1.10" tiledversion="1.11.2" orientation="orthogonal" renderorder="right-down" width="23" height="15" tilewidth="32" tileheight="32" infinite="0" nextlayerid="9" nextobjectid="40">
+ <tileset firstgid="1" name="Tilesetv3-resized" tilewidth="32" tileheight="32" tilecount="884" columns="17">
+  <image source="../pixel/Tilesetv3-resized.png" width="544" height="1664"/>
+ </tileset>
+ <layer id="1" name="Capa de patrones 1" width="23" height="15">
+  <data encoding="csv">
+0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
+0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
+0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
+0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
+0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
+0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
+0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
+0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
+0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
+0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
+0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
+0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
+0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
+0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
+0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
+</data>
+ </layer>
+ <layer id="2" name="Fondo" width="23" height="15">
+  <data encoding="csv">
+1610613098,1610613098,1610613098,1610613098,1610613098,1610613098,1610613098,1610613098,1610613098,1610613098,1610613098,1610613098,1610613098,1610613098,1610613098,1610613098,1610613098,1610613098,1610613098,1610613098,1610613098,1610613098,1610613098,
+358,359,377,377,377,377,359,360,377,377,377,359,360,377,377,377,377,359,360,377,377,377,362,
+358,359,377,377,377,377,377,377,377,377,377,377,377,377,377,377,377,377,377,377,377,377,362,
+358,376,377,377,377,377,377,377,377,377,377,377,377,377,377,377,377,377,377,377,377,377,362,
+358,377,377,377,377,377,377,377,377,377,377,377,377,377,377,377,377,377,377,377,377,2684354919,362,
+358,377,377,377,377,377,377,377,377,377,377,377,377,377,377,377,377,377,377,377,377,2684354920,362,
+358,377,377,377,377,377,377,377,377,377,377,377,377,377,377,377,377,377,377,377,377,377,362,
+358,377,377,377,377,377,377,377,377,377,275,275,275,377,377,377,377,377,377,377,377,377,362,
+358,377,377,377,377,377,377,377,377,377,377,377,377,377,377,377,377,377,377,377,377,2684354919,362,
+358,377,377,377,377,377,377,377,377,377,377,377,377,377,377,377,377,377,377,377,377,2684354920,362,
+358,1610613096,377,377,377,377,377,377,377,377,377,377,377,377,377,377,377,377,377,377,377,377,362,
+358,1610613095,377,377,377,377,377,377,377,377,377,377,377,377,377,377,377,377,377,377,377,377,362,
+375,377,377,377,377,377,377,377,377,377,377,377,377,377,377,377,377,377,377,377,377,377,362,
+375,376,377,377,377,377,377,377,377,377,377,377,377,377,377,377,377,377,377,377,377,377,362,
+392,113,113,113,113,113,113,113,113,113,113,113,113,113,113,113,113,113,113,113,113,113,396
+</data>
+ </layer>
+ <layer id="3" name="Suelo" width="23" height="15">
+  <data encoding="csv">
+0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
+0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
+0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
+0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
+0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
+0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,144,145,146,0,0,0,0,0,
+0,0,0,0,0,144,145,146,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
+0,0,0,0,0,0,0,0,0,0,275,275,275,0,0,0,0,0,0,0,0,0,0,
+0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
+0,0,0,0,0,0,0,0,0,0,0,0,0,0,144,145,146,0,0,0,0,0,0,
+0,0,0,0,0,0,0,0,0,0,144,145,146,0,0,0,0,0,0,0,0,0,0,
+0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
+0,0,0,0,0,0,144,145,146,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
+0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
+0,2684354922,2684354922,2684354922,2684354922,2684354922,2684354922,2684354922,2684354922,2684354922,2684354922,2684354922,2684354922,2684354922,2684354922,2684354922,2684354922,2684354922,2684354922,2684354922,2684354922,2684354922,0
+</data>
+ </layer>
+ <objectgroup id="4" name="PlayerSpawn">
+  <object id="1" name="PlayerSpawn" x="64" y="384" width="32" height="32"/>
+ </objectgroup>
+ <objectgroup id="5" name="Consumables">
+  <object id="31" name="Fish" type="consumable" x="191.5" y="133.5" width="32" height="32">
+   <properties>
+    <property name="Type" value="consumable"/>
+    <property name="consumable_type" value="fish"/>
+    <property name="health_value" type="int" value="50"/>
+    <property name="pickup_sound" value=""/>
+   </properties>
+  </object>
+  <object id="32" name="Fish" type="consumable" x="513" y="96" width="32" height="32">
+   <properties>
+    <property name="Type" value="consumable"/>
+    <property name="consumable_type" value="fish"/>
+    <property name="health_value" type="int" value="50"/>
+    <property name="pickup_sound" value=""/>
+   </properties>
+  </object>
+  <object id="38" name="Energy" type="consumable" x="57" y="84" width="32" height="32">
+   <properties>
+    <property name="Type" value="consumable"/>
+    <property name="consumable_type" value="energy_orb"/>
+    <property name="health_value" type="int" value="15"/>
+    <property name="pickup_sound" value=""/>
+   </properties>
+  </object>
+  <object id="39" name="Energy" type="consumable" x="635" y="82" width="32" height="32">
+   <properties>
+    <property name="Type" value="consumable"/>
+    <property name="consumable_type" value="energy_orb"/>
+    <property name="health_value" type="int" value="15"/>
+    <property name="pickup_sound" value=""/>
+   </properties>
+  </object>
+ </objectgroup>
+ <objectgroup id="6" name="Enemies">
+  <object id="33" name="Skeleton" type="enemy" x="477" y="228" width="32" height="32">
+   <properties>
+    <property name="enemy_attack" type="int" value="20"/>
+    <property name="enemy_health" type="int" value="100"/>
+    <property name="enemy_speed" type="int" value="2"/>
+    <property name="enemy_type" value="skeleton"/>
+   </properties>
+  </object>
+  <object id="34" name="Skeleton" type="enemy" x="235" y="312" width="32" height="32">
+   <properties>
+    <property name="enemy_attack" type="int" value="20"/>
+    <property name="enemy_health" type="int" value="100"/>
+    <property name="enemy_speed" type="int" value="2"/>
+    <property name="enemy_type" value="skeleton"/>
+   </properties>
+  </object>
+  <object id="37" name="Noctyrax" type="enemy" x="584" y="309" width="79" height="128">
+   <properties>
+    <property name="enemy_attack" type="int" value="50"/>
+    <property name="enemy_health" type="int" value="500"/>
+    <property name="enemy_speed" type="int" value="3"/>
+    <property name="enemy_type" value="noct"/>
+   </properties>
+  </object>
+ </objectgroup>
+ <objectgroup id="7" name="Boss"/>
+ <objectgroup id="8" name="Collisions">
+  <object id="19" name="Collisions" x="0" y="448" width="736" height="32"/>
+  <object id="20" name="Collisions" x="0" y="0" width="736" height="32"/>
+  <object id="21" name="Collisions" x="704" y="32" width="32" height="416"/>
+  <object id="22" name="Collisions" x="0" y="32" width="32" height="416"/>
+  <object id="25" name="Collisions" x="160" y="192" width="96" height="32"/>
+  <object id="26" name="Collisions" x="320" y="320" width="96" height="32"/>
+  <object id="27" name="Collisions" x="192" y="384" width="96" height="32"/>
+  <object id="28" name="Collisions" x="448" y="288" width="96" height="32"/>
+  <object id="29" name="Collisions" x="480" y="160" width="96" height="32"/>
+ </objectgroup>
+</map>
