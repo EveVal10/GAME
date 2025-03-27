@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<map version="1.10" tiledversion="1.11.2" orientation="orthogonal" renderorder="right-down" width="170" height="15" tilewidth="32" tileheight="32" infinite="0" nextlayerid="17" nextobjectid="170">
+<map version="1.10" tiledversion="1.11.2" orientation="orthogonal" renderorder="right-down" width="170" height="15" tilewidth="32" tileheight="32" infinite="0" nextlayerid="17" nextobjectid="171">
  <tileset firstgid="1" name="Tilesetv3-resized" tilewidth="32" tileheight="32" tilecount="884" columns="17">
   <image source="../pixel/Tilesetv3-resized.png" width="544" height="1664"/>
  </tileset>
@@ -195,7 +195,7 @@
    <properties>
     <property name="enemy_attack" type="int" value="10"/>
     <property name="enemy_health" type="int" value="50"/>
-    <property name="enemy_speed" type="int" value="5"/>
+    <property name="enemy_speed" type="int" value="4"/>
     <property name="enemy_type" value="rat"/>
    </properties>
   </object>
@@ -203,7 +203,7 @@
    <properties>
     <property name="enemy_attack" type="int" value="10"/>
     <property name="enemy_health" type="int" value="50"/>
-    <property name="enemy_speed" type="int" value="5"/>
+    <property name="enemy_speed" type="int" value="4"/>
     <property name="enemy_type" value="rat"/>
    </properties>
   </object>
@@ -211,7 +211,7 @@
    <properties>
     <property name="enemy_attack" type="int" value="10"/>
     <property name="enemy_health" type="int" value="50"/>
-    <property name="enemy_speed" type="int" value="5"/>
+    <property name="enemy_speed" type="int" value="4"/>
     <property name="enemy_type" value="rat"/>
    </properties>
   </object>
@@ -219,7 +219,7 @@
    <properties>
     <property name="enemy_attack" type="int" value="10"/>
     <property name="enemy_health" type="int" value="50"/>
-    <property name="enemy_speed" type="int" value="5"/>
+    <property name="enemy_speed" type="int" value="4"/>
     <property name="enemy_type" value="rat"/>
    </properties>
   </object>
@@ -227,15 +227,15 @@
    <properties>
     <property name="enemy_attack" type="int" value="10"/>
     <property name="enemy_health" type="int" value="50"/>
-    <property name="enemy_speed" type="int" value="5"/>
+    <property name="enemy_speed" type="int" value="4"/>
     <property name="enemy_type" value="rat"/>
    </properties>
   </object>
-  <object id="146" name="Rat" type="enemy" x="3981.83" y="232.334" width="32" height="32">
+  <object id="146" name="Rat" type="enemy" x="4054.83" y="222.334" width="32" height="32">
    <properties>
     <property name="enemy_attack" type="int" value="10"/>
     <property name="enemy_health" type="int" value="50"/>
-    <property name="enemy_speed" type="int" value="5"/>
+    <property name="enemy_speed" type="int" value="4"/>
     <property name="enemy_type" value="rat"/>
    </properties>
   </object>
@@ -243,7 +243,7 @@
    <properties>
     <property name="enemy_attack" type="int" value="10"/>
     <property name="enemy_health" type="int" value="50"/>
-    <property name="enemy_speed" type="int" value="5"/>
+    <property name="enemy_speed" type="int" value="4"/>
     <property name="enemy_type" value="rat"/>
    </properties>
   </object>
@@ -251,7 +251,7 @@
    <properties>
     <property name="enemy_attack" type="int" value="10"/>
     <property name="enemy_health" type="int" value="50"/>
-    <property name="enemy_speed" type="int" value="5"/>
+    <property name="enemy_speed" type="int" value="4"/>
     <property name="enemy_type" value="rat"/>
    </properties>
   </object>
@@ -259,7 +259,7 @@
    <properties>
     <property name="enemy_attack" type="int" value="10"/>
     <property name="enemy_health" type="int" value="50"/>
-    <property name="enemy_speed" type="int" value="5"/>
+    <property name="enemy_speed" type="int" value="4"/>
     <property name="enemy_type" value="rat"/>
    </properties>
   </object>
@@ -277,6 +277,14 @@
     <property name="enemy_health" type="int" value="100"/>
     <property name="enemy_speed" type="int" value="2"/>
     <property name="enemy_type" value="skeleton"/>
+   </properties>
+  </object>
+  <object id="170" name="Rat" type="enemy" x="3986" y="222" width="32" height="32">
+   <properties>
+    <property name="enemy_attack" type="int" value="10"/>
+    <property name="enemy_health" type="int" value="50"/>
+    <property name="enemy_speed" type="int" value="4"/>
+    <property name="enemy_type" value="rat"/>
    </properties>
   </object>
  </objectgroup>

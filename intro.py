@@ -79,16 +79,16 @@ def ask_player_name(screen, character_key):
 def show_intro_scenes(screen):
     scenes = [
         { "image": "assets/intro/scene1.png", "speaker": "Narrador", "dialogue": "Prólogo: El Eclipse de la Gema", "duration": None },
-    #    { "image": "assets/intro/scene1.png", "speaker": "Narrador", "dialogue": "La noche en que el cielo se quebró, la Torre del Alba ardía con un fulgor enfermo.", "duration": None },
-    #    { "image": "assets/intro/scene2.png", "speaker": "Narrador", "dialogue": "Felinaria, Alborfelis un reino de armonía, temblaba bajo el peso de una corrupción desconocida.", "duration": None },
-    #    { "image": "assets/intro/scene2.png", "speaker": "Narrador", "dialogue": "Desde los cimientos de la torre, la Gema de la Unidad se fragmentaba con un crujido desgarrador...", "duration": None },
-    #    { "image": "assets/intro/scene5.png", "speaker": "Narrador", "dialogue": "Su luz sagrada era devorada por un abismo de sombras.", "duration": None },
-    #    { "image": "assets/intro/scene6.png", "speaker": "Narrador", "dialogue": "Los hermanos, últimos guardianes de la torre, contemplaban impotentes la caída de su hogar.", "duration": None },
-    #    { "image": "assets/intro/scene8.png", "speaker": "Narrador", "dialogue": "La silueta de Umbra, el espíritu olvidado, emergía del núcleo de la gema...", "duration": None },
-    #    { "image": "assets/intro/scene7.png", "speaker": "Narrador", "dialogue": "Su esencia oscura se extendía como raíces hambrientas, asfixiando la realidad.", "duration": None },
-    #    { "image": "assets/intro/scene9.png", "speaker": "Hermana", "dialogue": "¡Debemos huir! ¡La torre está perdida!", "duration": None },
-    #    { "image": "assets/intro/scene10.png", "speaker": "Hermano", "dialogue": "¡No! Aún podemos salvarla... ¡Todavía hay esperanza!", "duration": None },
-    #    { "image": "assets/intro/scene11.png", "speaker": "Narrador", "dialogue": "Fue en ese instante cuando la elección quedó en manos del destino.", "duration": None },
+        { "image": "assets/intro/scene1.png", "speaker": "Narrador", "dialogue": "La noche en que el cielo se quebró, la Torre del Alba ardía con un fulgor enfermo.", "duration": None },
+        { "image": "assets/intro/scene2.png", "speaker": "Narrador", "dialogue": "Felinaria, Alborfelis un reino de armonía, temblaba bajo el peso de una corrupción desconocida.", "duration": None },
+        { "image": "assets/intro/scene2.png", "speaker": "Narrador", "dialogue": "Desde los cimientos de la torre, la Gema de la Unidad se fragmentaba con un crujido desgarrador...", "duration": None },
+        { "image": "assets/intro/scene5.png", "speaker": "Narrador", "dialogue": "Su luz sagrada era devorada por un abismo de sombras.", "duration": None },
+        { "image": "assets/intro/scene6.png", "speaker": "Narrador", "dialogue": "Los hermanos, últimos guardianes de la torre, contemplaban impotentes la caída de su hogar.", "duration": None },
+        { "image": "assets/intro/scene8.png", "speaker": "Narrador", "dialogue": "La silueta de Umbra, el espíritu olvidado, emergía del núcleo de la gema...", "duration": None },
+        { "image": "assets/intro/scene7.png", "speaker": "Narrador", "dialogue": "Su esencia oscura se extendía como raíces hambrientas, asfixiando la realidad.", "duration": None },
+        { "image": "assets/intro/scene9.png", "speaker": "Hermana", "dialogue": "¡Debemos huir! ¡La torre está perdida!", "duration": None },
+        { "image": "assets/intro/scene10.png", "speaker": "Hermano", "dialogue": "¡No! Aún podemos salvarla... ¡Todavía hay esperanza!", "duration": None },
+        { "image": "assets/intro/scene11.png", "speaker": "Narrador", "dialogue": "Fue en ese instante cuando la elección quedó en manos del destino.", "duration": None },
     ]
 
     for scene in scenes:
@@ -114,13 +114,13 @@ def show_intro_scenes(screen):
     # --- Escenas tras la elección ---
     post_choice_scenes = [
         { "image": "assets/intro/scene12.png", "speaker": "Narrador", "dialogue": "El hermano elegido por el jugador se aferra a la vida.", "duration": None },
-    #    { "image": "assets/intro/scene12.png", "speaker": "Narrador", "dialogue": "El otro... se enfrenta directamente a Umbra.", "duration": None },
-    #    { "image": "assets/intro/scene13.png", "speaker": "Narrador", "dialogue": "Un estallido de energía elemental rompe los muros. La torre colapsa.", "duration": None },
-    #    { "image": "assets/intro/scene14.png", "speaker": "Narrador", "dialogue": "El hermano no elegido desaparece entre el caos y las sombras.", "duration": None },
-    #    { "image": "assets/intro/scene15.png", "speaker": "Narrador", "dialogue": "El hermano restante lucha. Pero es inútil.", "duration": None },
-    #    { "image": "assets/intro/scene16.png", "speaker": "Narrador", "dialogue": "Un golpe brutal lo arroja contra las ruinas. Su mundo se desmorona.", "duration": None },
-    #    { "image": "assets/intro/scene17.png", "speaker": "Narrador", "dialogue": f"{game_state.player_name} siente cómo su conciencia se apaga lentamente.", "duration": None },
-    #   { "image": "assets/intro/scene17.png", "speaker": "Narrador", "dialogue": "El tiempo deja de existir...", "duration": None },
+        { "image": "assets/intro/scene12.png", "speaker": "Narrador", "dialogue": "El otro... se enfrenta directamente a Umbra.", "duration": None },
+        { "image": "assets/intro/scene13.png", "speaker": "Narrador", "dialogue": "Un estallido de energía elemental rompe los muros. La torre colapsa.", "duration": None },
+        { "image": "assets/intro/scene14.png", "speaker": "Narrador", "dialogue": "El hermano no elegido desaparece entre el caos y las sombras.", "duration": None },
+        { "image": "assets/intro/scene15.png", "speaker": "Narrador", "dialogue": "El hermano restante lucha. Pero es inútil.", "duration": None },
+        { "image": "assets/intro/scene16.png", "speaker": "Narrador", "dialogue": "Un golpe brutal lo arroja contra las ruinas. Su mundo se desmorona.", "duration": None },
+        { "image": "assets/intro/scene17.png", "speaker": "Narrador", "dialogue": f"{game_state.player_name} siente cómo su conciencia se apaga lentamente.", "duration": None },
+        { "image": "assets/intro/scene17.png", "speaker": "Narrador", "dialogue": "El tiempo deja de existir...", "duration": None },
     ]
 
     for scene in post_choice_scenes:
@@ -140,10 +140,10 @@ def show_intro_scenes(screen):
     # --- Salto temporal de 100 años ---
     post_time_skip_scenes = [
         { "image": "assets/intro/scene18.png", "speaker": "Narrador", "dialogue": "Silencio. Oscuridad. Un susurro lejano atraviesa el abismo del tiempo.", "duration": None },
-    #    { "image": "assets/intro/scene18.png", "speaker": "Narrador", "dialogue": "Cien años pasaron desde la caída de la Torre del Alba.", "duration": None },
-    #    { "image": "assets/intro/scene19.png", "speaker": "Narrador", "dialogue": "La historia de los guardianes se desvaneció como polvo en el viento. El mundo cambió.", "duration": None },
-    #    { "image": "assets/intro/scene19.png", "speaker": "Narrador", "dialogue": "Los reinos cayeron. Nuevas criaturas caminaron la tierra. Pero una esperanza dormía…", "duration": None },
-    #    { "image": "assets/intro/scene20.png", "speaker": "Narrador", "dialogue": f"...hasta que los ojos de {game_state.player_name} se abrieron nuevamente.", "duration": None },
+        { "image": "assets/intro/scene18.png", "speaker": "Narrador", "dialogue": "Cien años pasaron desde la caída de la Torre del Alba.", "duration": None },
+        { "image": "assets/intro/scene19.png", "speaker": "Narrador", "dialogue": "La historia de los guardianes se desvaneció como polvo en el viento. El mundo cambió.", "duration": None },
+        { "image": "assets/intro/scene19.png", "speaker": "Narrador", "dialogue": "Los reinos cayeron. Nuevas criaturas caminaron la tierra. Pero una esperanza dormía…", "duration": None },
+        { "image": "assets/intro/scene20.png", "speaker": "Narrador", "dialogue": f"...hasta que los ojos de {game_state.player_name} se abrieron nuevamente.", "duration": None },
     ]
 
     for scene in post_time_skip_scenes:
@@ -163,18 +163,18 @@ def show_intro_scenes(screen):
     # --- Encuentro con Athelia ---
     extended_intro_scenes = [
         { "image": "assets/intro/scene21.png", "speaker": "Narrador", "dialogue": f"Al mirar hacia el cielo, {game_state.player_name} y voler a mirar a su alrededor, encuentra con una figura observadora.", "duration": None },
-    #    { "image": "assets/intro/scene21.png", "speaker": "Narrador", "dialogue": "La figura toma forma: un ser grácil de pelaje azulado, con vetas luminosas y ojos violetas.", "duration": None },
-    #    { "image": "assets/intro/scene22.png", "speaker": "???", "dialogue": "Te has despertado por fin. Mi nombre es Athelia.", "duration": None },
-    #    { "image": "assets/intro/scene22.png", "speaker": f"{game_state.player_name}", "dialogue": "¿Dónde... dónde estamos?", "duration": None },
-    #    { "image": "assets/intro/scene19.png", "speaker": "Athelia", "dialogue": "Esta región se llama Aurumwood. Alguna vez fue parte del reino exterior de Felinaria.", "duration": None },
-    #    { "image": "assets/intro/scene19.png", "speaker": "Athelia", "dialogue": "Han pasado muchas cosas desde que... desapareciste.", "duration": None },
-    #    { "image": "assets/intro/scene23.png", "speaker": f"{game_state.player_name}", "dialogue": "Debo encontrar a mi hermano. Y necesito descubrir qué pasó realmente.", "duration": None },
-    #    { "image": "assets/intro/scene23.png", "speaker": "Athelia", "dialogue": "Lo sé. Por eso estoy aquí. He escuchado rumores... hay rastros de memoria en las ciudades que aún quedan en pie.", "duration": None },
-    #    { "image": "assets/intro/scene23.png", "speaker": f"{game_state.player_name}", "dialogue": "¿Qué ciudades existen ahora? ¿Y qué pasó con las demás?", "duration": None },
-    #    { "image": "assets/intro/scene23.png", "speaker": "Athelia", "dialogue": "Existían seis grandes ciudades. Cinco sobrevivieron. La sexta... quedó sepultada en la oscuridad.", "duration": None },
-    #    { "image": "assets/intro/scene23.png", "speaker": f"{game_state.player_name}", "dialogue": "Debo ir a las ciudades que queden. Tal vez allí encuentre rastros de mi hermano... o de la verdad.", "duration": None },
-    #    { "image": "assets/intro/scene24.png", "speaker": "Athelia", "dialogue": "Conozco un camino hacia Ludoria, la Ciudad de la Música y los Cristales. Pero deberás tener cuidado.", "duration": None },
-    #    { "image": "assets/intro/scene25.png", "speaker": "Narrador", "dialogue": f"Y así, tras cien años de silencio, el viaje de {game_state.player_name} comienza de nuevo.", "duration": None },
+        { "image": "assets/intro/scene21.png", "speaker": "Narrador", "dialogue": "La figura toma forma: un ser grácil de pelaje azulado, con vetas luminosas y ojos violetas.", "duration": None },
+        { "image": "assets/intro/scene22.png", "speaker": "???", "dialogue": "Te has despertado por fin. Mi nombre es Athelia.", "duration": None },
+        { "image": "assets/intro/scene22.png", "speaker": f"{game_state.player_name}", "dialogue": "¿Dónde... dónde estamos?", "duration": None },
+        { "image": "assets/intro/scene19.png", "speaker": "Athelia", "dialogue": "Esta región se llama Aurumwood. Alguna vez fue parte del reino exterior de Felinaria.", "duration": None },
+        { "image": "assets/intro/scene19.png", "speaker": "Athelia", "dialogue": "Han pasado muchas cosas desde que... desapareciste.", "duration": None },
+        { "image": "assets/intro/scene23.png", "speaker": f"{game_state.player_name}", "dialogue": "Debo encontrar a mi hermano. Y necesito descubrir qué pasó realmente.", "duration": None },
+        { "image": "assets/intro/scene23.png", "speaker": "Athelia", "dialogue": "Lo sé. Por eso estoy aquí. He escuchado rumores... hay rastros de memoria en las ciudades que aún quedan en pie.", "duration": None },
+        { "image": "assets/intro/scene23.png", "speaker": f"{game_state.player_name}", "dialogue": "¿Qué ciudades existen ahora? ¿Y qué pasó con las demás?", "duration": None },
+        { "image": "assets/intro/scene23.png", "speaker": "Athelia", "dialogue": "Existían seis grandes ciudades. Cinco sobrevivieron. La sexta... quedó sepultada en la oscuridad.", "duration": None },
+        { "image": "assets/intro/scene23.png", "speaker": f"{game_state.player_name}", "dialogue": "Debo ir a las ciudades que queden. Tal vez allí encuentre rastros de mi hermano... o de la verdad.", "duration": None },
+        { "image": "assets/intro/scene24.png", "speaker": "Athelia", "dialogue": "Conozco un camino hacia Ludoria, la Ciudad de la Música y los Cristales. Pero deberás tener cuidado.", "duration": None },
+        { "image": "assets/intro/scene25.png", "speaker": "Narrador", "dialogue": f"Y así, tras cien años de silencio, el viaje de {game_state.player_name} comienza de nuevo.", "duration": None },
     ]
 
     for scene in extended_intro_scenes:
