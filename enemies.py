@@ -1,6 +1,6 @@
 import pygame
 import os
-
+import random
 class Enemy(pygame.sprite.Sprite):
     def __init__(self, x, y, enemy_type="bandit", speed=2, health=50, damage=15,
                  effects_volume=0.5, all_sounds=None):
@@ -9,7 +9,7 @@ class Enemy(pygame.sprite.Sprite):
         self.speed = speed
         self.health = health
         self.damage = damage
-
+        self.max_health = health 
         self.knockback_resistance = 0.8
 
         
@@ -248,3 +248,92 @@ class Enemy(pygame.sprite.Sprite):
             self.health = 0
             self.set_state("death")
             self.kill()
+
+
+class MiniBoss(Enemy):
+    def __init__(self, x, y, boss_type="noct", speed=3, health=150, damage=30,
+                 effects_volume=0.5, all_sounds=None):
+        super().__init__(x, y, boss_type, speed, health, damage, effects_volume, all_sounds)
+        
+        # Configuración mejorada para el jefe
+        self.knockback_resistance = 0.95  # Mayor resistencia
+        self.chase_range = 350  # Mayor rango de detección
+        self.attack_range = 60  # Mayor alcance de ataque
+        self.attack_cooldown = 2000  # 2 segundos entre ataques
+        self.last_attack_time = 0
+        self.special_attack_damage = 45  # Daño de ataque especial
+
+        self.max_health = health  # Opcional: si quieres que sea diferente al health inicial
+        self.health = health * 2 
+        
+        # Cargar sprites especiales
+        self.load_special_sprites()
+        
+        # Sonido especial de ataque
+        self.special_attack_sound = pygame.mixer.Sound("assets/audio/effects/attack.mp3")
+        self.special_attack_sound.set_volume(effects_volume)
+        if all_sounds is not None:
+            all_sounds.append(self.special_attack_sound)
+
+    def load_special_sprites(self):
+        """Carga animaciones especiales para el jefe"""
+        base_path = f"assets/enemies/{self.type}"
+        self.animations.update({
+            "special_attack": self.load_frames(os.path.join(base_path, "special_attack")),
+            "rage": self.load_frames(os.path.join(base_path, "rage"))
+        })
+
+    def ai_logic(self, player):
+        """Comportamiento mejorado del jefe"""
+        super().ai_logic(player)
+        
+        # 20% de probabilidad de ataque especial cuando está cerca
+        if self.state == "chase" and abs(player.rect.centerx - self.rect.centerx) < self.attack_range:
+            if pygame.time.get_ticks() - self.last_attack_time > self.attack_cooldown:
+                if random.random() < 0.2:
+                    self.special_attack(player)
+
+    def special_attack(self, player):
+        """Ataque especial con área de efecto"""
+        self.set_state("special_attack")
+        self.special_attack_sound.play()
+        
+        # Crear área de daño
+        attack_rect = pygame.Rect(
+            self.rect.centerx - 100,
+            self.rect.centery - 50,
+            200,
+            100
+        )
+        
+        if player.rect.colliderect(attack_rect):
+            player.take_damage(self.special_attack_damage)
+        
+        self.last_attack_time = pygame.time.get_ticks()
+
+    def draw_health_bar(self, surface, camera):
+        """Dibuja una barra de salud mejorada"""
+        bar_width = 120
+        bar_height = 12
+        fill = (self.health / self.max_health) * bar_width
+        
+        # Posición relativa a la cámara
+        screen_pos = camera.apply(self.rect)
+        background_rect = pygame.Rect(screen_pos.x - 10, screen_pos.y - 25, bar_width, bar_height)
+        fill_rect = pygame.Rect(screen_pos.x - 10, screen_pos.y - 25, fill, bar_height)
+        
+        pygame.draw.rect(surface, (50, 50, 50), background_rect)
+        pygame.draw.rect(surface, (200, 30, 30), fill_rect)
+        pygame.draw.rect(surface, (100, 100, 100), background_rect, 2)
+
+    def animate(self):
+        """Animación mejorada con efectos visuales"""
+        super().animate()
+        
+        # Efecto de enfado al tener poca vida
+        if self.health < self.max_health * 0.3 and self.state != "death":
+            if "rage" in self.animations and len(self.animations["rage"]) > 0:
+                self.current_frame %= len(self.animations["rage"])
+                self.image = self.animations["rage"][self.current_frame]
+                if self.direction == -1:
+                    self.image = pygame.transform.flip(self.image, True, False)

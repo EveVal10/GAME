@@ -2,7 +2,6 @@ import pygame
 import pytmx
 import game_state  # <- Asegúrate de importar esto para acceder a player_name
 
-
 # Importa tu clase NPC
 from npc import NPC
 
@@ -15,7 +14,7 @@ from tilemap import (
     get_level_end
 )
 from camera import Camera
-from enemies import Enemy
+from enemies import Enemy, MiniBoss
 from consumable import Consumable
 
 # ---------------------------
