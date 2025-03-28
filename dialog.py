@@ -62,6 +62,18 @@ def show_dialog_with_name(screen, speaker_name, dialog_text, effects_volume=0.5)
 
     done_typing = False
 
+    # Inicializar joystick si está disponible
+    joystick = None
+    if pygame.joystick.get_count() > 0:
+        joystick = pygame.joystick.Joystick(0)
+        joystick.init()
+
+    # Definir botones del joystick para diálogos
+    JOYSTICK_BUTTONS = {
+        'ACCEPT': 0,  # Botón A (típico para aceptar)
+        'SKIP': 1     # Botón B (típico para cancelar/saltar)
+    }
+
     while not done_typing:
         accelerate = False
         for event in pygame.event.get():
@@ -69,8 +81,15 @@ def show_dialog_with_name(screen, speaker_name, dialog_text, effects_volume=0.5)
                 pygame.quit()
                 exit()
 
+        # Verificar teclado y joystick para acelerar texto
         keys = pygame.key.get_pressed()
-        accelerate = keys[pygame.K_z] or keys[pygame.K_RETURN]
+        joystick_pressed = False
+        
+        if joystick:
+            # Verificar botones del joystick (A o B para acelerar)
+            joystick_pressed = any(joystick.get_button(btn) for btn in JOYSTICK_BUTTONS.values())
+        
+        accelerate = keys[pygame.K_z] or keys[pygame.K_RETURN] or joystick_pressed
         current_speed = accelerate_speed if accelerate else base_speed
 
         current_time = pygame.time.get_ticks()
@@ -120,6 +139,15 @@ def show_dialog_with_name(screen, speaker_name, dialog_text, effects_volume=0.5)
             elif event.type == pygame.KEYDOWN:
                 if event.key in [pygame.K_z, pygame.K_RETURN]:
                     waiting = False
+            elif event.type == pygame.JOYBUTTONDOWN:
+                # Cualquier botón del joystick para continuar
+                if event.button in JOYSTICK_BUTTONS.values():
+                    waiting = False
+
+        # Verificar estado continuo de botones del joystick
+        if joystick:
+            if any(joystick.get_button(btn) for btn in JOYSTICK_BUTTONS.values()):
+                waiting = False
 
         screen.blit(background_snapshot, (0, 0))
         overlay = pygame.Surface(screen.get_size(), pygame.SRCALPHA)

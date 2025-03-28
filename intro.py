@@ -3,11 +3,171 @@ from dialog import show_dialog_with_name
 from utils import get_font
 import game_state
 
+# Configuración de botones del joystick
+JOYSTICK_BUTTONS = {
+    'CONFIRM': 0,      # Botón A (confirmar)
+    'BACK': 1,         # Botón B (cancelar/atrás)
+    'SPECIAL': 2,      # Botón X (especial)
+    'JUMP': 3          # Botón Y (saltar)
+}
+
+class VirtualKeyboard:
+    def __init__(self, screen):
+        self.screen = screen
+        self.font = get_font(24)
+        self.small_font = get_font(20)
+        # Filas del teclado (letras y números)
+        self.rows = [
+            "ABCDEFGHIJ",
+            "KLMNOPQRST",
+            "UVWXYZ0123",
+            "456789.,! ",
+        ]
+        # Botones de acción en la parte inferior
+        self.action_buttons = ["BORRAR", "ACEPTAR"]
+        self.selected_row = 0
+        self.selected_col = 0
+        self.selected_action = 0  # 0: BORRAR, 1: ACEPTAR
+        self.last_joy_move = 0
+        self.last_button_press = 0
+        self.move_delay = 200  # ms entre movimientos
+        self.button_delay = 300  # ms entre pulsaciones
+        self.name = ""
+        self.button_pressed = False
+        self.in_actions = False  # Si estamos en la fila de acciones
+        
+    def draw(self):
+        # Fondo semitransparente
+        overlay = pygame.Surface(self.screen.get_size(), pygame.SRCALPHA)
+        overlay.fill((0, 0, 0, 180))
+        self.screen.blit(overlay, (0, 0))
+        
+        # Dibujar teclado
+        start_y = 150
+        for i, row in enumerate(self.rows):
+            start_x = self.screen.get_width() // 2 - (len(row) * 25)
+            for j, char in enumerate(row):
+                color = (255, 255, 100) if (not self.in_actions and i == self.selected_row and j == self.selected_col) else (255, 255, 255)
+                text = self.font.render(char, True, color)
+                self.screen.blit(text, (start_x + j * 50, start_y + i * 50))
+        
+        # Dibujar botones de acción en la parte inferior
+        action_y = start_y + len(self.rows) * 50 + 20
+        action_start_x = self.screen.get_width() // 2 - (len(self.action_buttons) * 100)
+        
+        for i, button in enumerate(self.action_buttons):
+            color = (255, 100, 100) if (self.in_actions and i == self.selected_action) else (200, 200, 200)
+            pygame.draw.rect(self.screen, color, (action_start_x + i * 200, action_y, 180, 40), 0 if (self.in_actions and i == self.selected_action) else 2)
+            text = self.font.render(button, True, (0, 0, 0) if (self.in_actions and i == self.selected_action) else (255, 255, 255))
+            self.screen.blit(text, (action_start_x + i * 200 + 90 - text.get_width()//2, action_y + 20 - text.get_height()//2))
+        
+        # Dibujar nombre actual
+        name_text = self.font.render(f"Nombre: {self.name}_", True, (255, 255, 255))
+        self.screen.blit(name_text, (self.screen.get_width() // 2 - name_text.get_width() // 2, 100))
+        
+        # Instrucciones
+        instr = self.small_font.render("Mueve el joystick para navegar, Botón A para seleccionar", True, (200, 200, 200))
+        self.screen.blit(instr, (self.screen.get_width() // 2 - instr.get_width() // 2, 450))
+    
+    def update(self, joystick):
+        current_time = pygame.time.get_ticks()
+        
+        if not joystick:
+            return None
+            
+        # Manejo de movimiento con joystick
+        if current_time - self.last_joy_move > self.move_delay:
+            axis_x = joystick.get_axis(0)
+            axis_y = joystick.get_axis(1)
+            
+            # Movimiento horizontal
+            if axis_x < -0.5:  # Izquierda
+                if self.in_actions:
+                    self.selected_action = max(0, self.selected_action - 1)
+                else:
+                    self.selected_col = max(0, self.selected_col - 1)
+                self.last_joy_move = current_time
+            elif axis_x > 0.5:  # Derecha
+                if self.in_actions:
+                    self.selected_action = min(len(self.action_buttons)-1, self.selected_action + 1)
+                else:
+                    self.selected_col = min(len(self.rows[self.selected_row])-1, self.selected_col + 1)
+                self.last_joy_move = current_time
+            
+            # Movimiento vertical - SOLO cambia a acciones cuando está en la última fila y va hacia abajo
+            if axis_y < -0.5:  # Arriba
+                if self.in_actions:
+                    self.in_actions = False
+                else:
+                    self.selected_row = max(0, self.selected_row - 1)
+                    # Asegurar que la columna seleccionada no exceda el límite de la nueva fila
+                    self.selected_col = min(self.selected_col, len(self.rows[self.selected_row])-1)
+                self.last_joy_move = current_time
+            elif axis_y > 0.5:  # Abajo
+                if not self.in_actions and self.selected_row == len(self.rows)-1:
+                    self.in_actions = True
+                elif not self.in_actions:
+                    self.selected_row = min(len(self.rows)-1, self.selected_row + 1)
+                    # Asegurar que la columna seleccionada no exceda el límite de la nueva fila
+                    self.selected_col = min(self.selected_col, len(self.rows[self.selected_row])-1)
+                self.last_joy_move = current_time
+        
+        # Manejo del botón con delay
+        if joystick.get_button(JOYSTICK_BUTTONS['CONFIRM']):
+            if not self.button_pressed and current_time - self.last_button_press > self.button_delay:
+                self.button_pressed = True
+                self.last_button_press = current_time
+                return self.handle_button_press()
+        else:
+            self.button_pressed = False
+        
+        return None
+    
+    def handle_button_press(self):
+        if self.in_actions:
+            # Manejar botones de acción
+            if self.selected_action == 0:  # BORRAR
+                self.name = self.name[:-1]
+            elif self.selected_action == 1:  # ACEPTAR
+                if self.name:
+                    return self.name
+        else:
+            # Manejar teclas del teclado
+            char = self.rows[self.selected_row][self.selected_col]
+            if len(self.name) < 16:
+                self.name += char
+        return None
+
+    def handle_input(self, joystick=None):
+        for event in pygame.event.get():
+            if event.type == pygame.QUIT:
+                pygame.quit()
+                exit()
+            elif event.type == pygame.KEYDOWN:
+                if event.key == pygame.K_RETURN and self.name:
+                    return self.name
+                elif event.key == pygame.K_BACKSPACE:
+                    self.name = self.name[:-1]
+                elif len(self.name) < 16 and event.unicode.isprintable():
+                    self.name += event.unicode
+        
+        # Manejo de joystick a través del método update
+        result = self.update(joystick)
+        return result
+
 # --- Selección del personaje ---
 def show_character_selector(screen):
     font = get_font(22)
     clock = pygame.time.Clock()
     selected = 0  # 0: izquierda, 1: derecha
+    last_joy_move = 0
+    move_delay = 500  # ms entre movimientos
+
+    # Inicializar joystick si está disponible
+    joystick = None
+    if pygame.joystick.get_count() > 0:
+        joystick = pygame.joystick.Joystick(0)
+        joystick.init()
 
     arion_img = pygame.image.load("assets/characters/arion.png")
     umbrielle_img = pygame.image.load("assets/characters/umbrielle.png")
@@ -16,6 +176,22 @@ def show_character_selector(screen):
     umbrielle_img = pygame.transform.scale(umbrielle_img, (200, 300))
 
     while True:
+        current_time = pygame.time.get_ticks()
+        
+        # Manejo de joystick
+        if joystick and current_time - last_joy_move > move_delay:
+            axis_x = joystick.get_axis(0)
+            if axis_x < -0.5:  # Izquierda
+                selected = 0
+                last_joy_move = current_time
+            elif axis_x > 0.5:  # Derecha
+                selected = 1
+                last_joy_move = current_time
+            
+            # Confirmar con botón A (0)
+            if joystick.get_button(JOYSTICK_BUTTONS['CONFIRM']):
+                return "arion" if selected == 0 else "umbrielle"
+
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 pygame.quit()
@@ -37,7 +213,12 @@ def show_character_selector(screen):
         else:
             pygame.draw.rect(screen, (255, 255, 255), (3*screen.get_width()//4 - 110, 140, 220, 320), 3)
 
-        text = font.render("Usa ← → para elegir. Z o Enter para confirmar.", True, (255, 255, 255))
+        # Mostrar instrucciones según el control usado
+        if joystick:
+            text = font.render("Usa el joystick para elegir. Botón A para confirmar.", True, (255, 255, 255))
+        else:
+            text = font.render("Usa ← → para elegir. Z o Enter para confirmar.", True, (255, 255, 255))
+        
         screen.blit(text, (screen.get_width()//2 - text.get_width()//2, 500))
 
         pygame.display.flip()
@@ -47,31 +228,33 @@ def show_character_selector(screen):
 def ask_player_name(screen, character_key):
     font = get_font(24)
     clock = pygame.time.Clock()
-    name = ""
-    active = True
-
+    
+    # Inicializar joystick si está disponible
+    joystick = None
+    if pygame.joystick.get_count() > 0:
+        joystick = pygame.joystick.Joystick(0)
+        joystick.init()
+    
+    # Crear teclado virtual
+    keyboard = VirtualKeyboard(screen)
     prompt = "Has elegido a tu guardián. ¿Qué nombre le darás?"
 
-    while active:
-        for event in pygame.event.get():
-            if event.type == pygame.QUIT:
-                pygame.quit()
-                exit()
-            elif event.type == pygame.KEYDOWN:
-                if event.key == pygame.K_RETURN and name:
-                    return name
-                elif event.key == pygame.K_BACKSPACE:
-                    name = name[:-1]
-                elif len(name) < 16 and event.unicode.isprintable():
-                    name += event.unicode
+    while True:
+        # Manejo de entrada
+        result = keyboard.handle_input(joystick)
+        if result is not None:
+            return result
 
+        # Actualizar teclado virtual con joystick
+        if joystick:
+            keyboard.update(joystick)
+
+        # Dibujar
         screen.fill((0, 0, 0))
         prompt_surface = font.render(prompt, True, (255, 255, 255))
-        name_surface = font.render(name + "_", True, (255, 255, 100))
-
-        screen.blit(prompt_surface, (screen.get_width()//2 - prompt_surface.get_width()//2, 200))
-        screen.blit(name_surface, (screen.get_width()//2 - name_surface.get_width()//2, 250))
-
+        screen.blit(prompt_surface, (screen.get_width()//2 - prompt_surface.get_width()//2, 50))
+        
+        keyboard.draw()
         pygame.display.flip()
         clock.tick(60)
 

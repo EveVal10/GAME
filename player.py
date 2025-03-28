@@ -121,25 +121,16 @@ class Player(pygame.sprite.Sprite):
         keys = pygame.key.get_pressed()
 
         moving = False
-        if keys[pygame.K_LEFT]:
+        if keys[pygame.K_LEFT] or (self.joystick and self.joystick.get_axis(0) < -0.5):
             self.velocity_x = -self.speed
             self.state = "left"
             self.last_direction = "left"
-        elif keys[pygame.K_RIGHT]:
+            moving = True
+        elif keys[pygame.K_RIGHT] or (self.joystick and self.joystick.get_axis(0) > 0.5):
             self.velocity_x = self.speed
             self.state = "right"
             self.last_direction = "right"
-
-        if self.joystick:
-            axis_x = self.joystick.get_axis(0)
-            if abs(axis_x) > 0.1:
-                self.velocity_x = int(axis_x * self.speed)
-                if axis_x < 0:
-                    self.state = "left"
-                    self.last_direction = "left"
-                else:
-                    self.state = "right"
-                    self.last_direction = "right"
+            moving = True
 
         if self.velocity_x == 0 and not self.attacking:
             self.state = "idle"
@@ -150,8 +141,8 @@ class Player(pygame.sprite.Sprite):
         else:
             pygame.mixer.Channel(1).stop()
 
-        # Salto
-        if (keys[pygame.K_SPACE] or (self.joystick and self.joystick.get_button(0))) and self.on_ground:
+        # Salto (también verificar botón del joystick)
+        if (keys[pygame.K_SPACE] or (self.joystick and (self.joystick.get_button(0) ))) and self.on_ground:
             self.velocity_y = self.jump_speed
             self.on_ground = False
             self.sounds["jump"].play()

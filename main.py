@@ -97,11 +97,30 @@ def show_camp_scene(screen, camp_image, duration=3000):
     pygame.time.delay(duration) 
     
 def wait_for_any_key():
-    """Espera hasta que se pulse cualquier tecla."""
+    """Espera hasta que se pulse cualquier tecla o el botón de ataque (1) del joystick."""
+    # Inicializar joystick si está disponible
+    joystick = None
+    if pygame.joystick.get_count() > 0:
+        joystick = pygame.joystick.Joystick(0)
+        joystick.init()
+    
+    ATTACK_BUTTON = 1 
+    
     while True:
         for event in pygame.event.get():
+            if event.type == pygame.QUIT:
+                pygame.quit()
+                exit()
             if event.type == pygame.KEYDOWN:
                 return event.key
+            if event.type == pygame.JOYBUTTONDOWN:
+                if event.button == ATTACK_BUTTON:
+                    return pygame.K_e  # Devuelve la tecla 'e' para mantener consistencia
+        
+        # También verificamos el estado del botón continuamente
+        if joystick and joystick.get_button(ATTACK_BUTTON):
+            return pygame.K_e  # Devuelve la tecla 'e' para mantener consistencia
+            
         pygame.time.delay(50)
         
 def show_full_conversation(npc, screen):
@@ -137,6 +156,15 @@ def show_full_conversation(npc, screen):
 def main():
     pygame.init()
     pygame.joystick.init()
+
+    ARCADE_BUTTONS = {
+        'JUMP': 3,       # Botón A (típicamente)
+        'ATTACK': 1,      # Botón B
+        'SPECIAL': 2,     # Botón C
+        'PAUSE': 6,       # Botón 7 (pausa)
+        'INTERACT': 0,    # Botón D (interacción)
+        'PROJECTILE': 4   # Botón para proyectiles
+    }
     
     music_volume = 0.5
     effects_volume = 0.5
@@ -200,7 +228,7 @@ def main():
     death_screen_start_time = None
     death_screen_delay = 2
     
-    projectiles = pygame.sprite.Group()  # Si estás usando un grupo de sprites de pygame
+    projectiles = pygame.sprite.Group() 
     
     
 
@@ -232,13 +260,37 @@ def main():
                    direction = 1 if player.last_direction == "right" else -1
                    projectile = EnergyProjectile(player.rect.centerx, player.rect.centery, direction)
                    projectiles.add(projectile)
-        
 
-        try:
-            if joystick and joystick.get_button(4):
+        # Control del joystick
+        if joystick:
+            # Pausa con botón 7
+            if joystick.get_button(ARCADE_BUTTONS['PAUSE']):
+                pause_background = screen.copy()
+                result = show_pause_menu(screen, pause_background)
+                if result == "resume":
+                    pass
+                elif result == "config":
+                    music_volume, effects_volume = show_config_screen(screen, music_volume, effects_volume, all_sounds)
+                    actualizar_volumen_efectos(effects_volume, all_sounds)
+                elif result == "exit":
+                    running = False
+            
+            # Ataque con botón B (1)
+            if joystick.get_button(ARCADE_BUTTONS['ATTACK']):
                 player.attack()
-        except Exception as e:
-            print(f"Error en joystick: {e}")
+                
+            # Interacción con NPCs con botón D (3)
+            if joystick.get_button(ARCADE_BUTTONS['INTERACT']):
+                for npc in level_data["npcs"]:
+                    if player.rect.colliderect(npc.rect):
+                        show_full_conversation(npc, screen)
+                        break
+                        
+            # Disparar proyectil con botón especial (4)
+            if joystick.get_button(ARCADE_BUTTONS['PROJECTILE']) and player.has_energy:
+                direction = 1 if player.last_direction == "right" else -1
+                projectile = EnergyProjectile(player.rect.centerx, player.rect.centery, direction)
+                projectiles.add(projectile)
 
         # Actualizaciones
         player.update(level_data["collision_rects"], level_data["enemies"], 
