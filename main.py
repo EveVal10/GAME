@@ -10,7 +10,7 @@ from screens import (
 from tilemap import draw_tiled_map, get_player_spawn
 from player import Player
 from camera import Camera
-from intro import show_intro_scenes
+from intro import show_intro_scenes, show_final_cinematic
 from enemies import Enemy, MiniBoss
 from consumable import Consumable
 from dialog import show_dialog_with_name
@@ -23,6 +23,8 @@ from projectile import EnergyProjectile
 BACKGROUND_IMAGE = "assets/screen/background.png"
 BACKGROUND_MUSIC = "assets/audio/menu/EscapeThatFeeling.mp3"
 INTRO_MUSIC = "assets/audio/game/intro_music.mp3"
+ENDING_CINEMATIC_MUSIC = "assets/audio/game/final_cinematic.mp3"
+CREDITS_MUSIC = "assets/audio/menu/credits_theme.mp3"
 
 LOGO_1 = "assets/logo/logoUTCJ.png"
 LOGO_2 = "assets/logo/logo.png"
@@ -206,6 +208,7 @@ def main():
     # Inicialización del juego
     current_level = "level1"
     level_data = load_level_data(current_level, None, effects_volume, all_sounds)
+    level_data["final_cinematic_shown"] = False
     npcs = level_data["npcs"]
     player = Player(x=level_data["player_spawn"][0], y=level_data["player_spawn"][1], effects_volume=effects_volume, all_sounds=all_sounds)
     
@@ -255,6 +258,7 @@ def main():
                     for npc in level_data["npcs"]:
                         if player.rect.colliderect(npc.rect):
                             show_full_conversation(npc, screen)
+                            
                             break
                 elif event.key == pygame.K_x and player.has_energy:
                    direction = 1 if player.last_direction == "right" else -1
@@ -310,9 +314,42 @@ def main():
         
         for enemy in level_data["enemies"]:
             enemy.update(level_data["collision_rects"], player)
+            
+            if level_data["final_cinematic_shown"]:
+                level_data["enemies"] = [e for e in level_data["enemies"] if not isinstance(e, MiniBoss) or not e.ready_to_remove]    
+            
+
+        for enemy in level_data["enemies"]:
+           if isinstance(enemy, MiniBoss):
+               enemy.draw_health_bar(screen, level_data["camera"])
+               enemy.projectiles.update(
+                   level_data["map_width"], level_data["map_height"], level_data["collision_rects"]
+               )
+
+               for bp in enemy.projectiles:
+                   if bp.rect.colliderect(player.rect):
+                       player.take_damage(30, play_sound=True)
+                       bp.kill()
 
 
+        minibosses = [enemy for enemy in level_data["enemies"] if isinstance(enemy, MiniBoss)]
+        # Verifica cuántos minibosses hay
 
+        for enemy in minibosses:
+            print(f"Miniboss dead: {enemy.dead}, death animation finished: {enemy.death_animation_finished}")
+        
+        if minibosses and not level_data["final_cinematic_shown"]:
+            all_minibosses_dead = all(
+                enemy.dead and enemy.death_animation_finished
+                for enemy in level_data["enemies"]
+                if isinstance(enemy, MiniBoss)
+            )
+            print(f"All minibosses dead: {all_minibosses_dead}")
+            if all_minibosses_dead:
+                show_final_cinematic(screen)
+                level_data["final_cinematic_shown"] = True
+              
+              
         level_data["consumables"].update()
 
         # Pérdida de salud progresiva
@@ -334,7 +371,7 @@ def main():
         # Cambio de nivel
         if (level_data["level_end_rect"] and 
             player.rect.colliderect(level_data["level_end_rect"])):
-            
+
             # Mostrar diálogos de fin de nivel
             for dialogue in level_data["end_dialogue"]:
                 show_dialog_with_name(screen, dialogue["speaker"], dialogue["text"])
@@ -344,7 +381,7 @@ def main():
             if level_data["next_level"]:
                 current_level = level_data["next_level"]
                 level_data = load_level_data(current_level, player, effects_volume, all_sounds)
-
+                level_data["final_cinematic_shown"] = False
 
                 player.rect.topleft = level_data["player_spawn"]  # Actualizar posición
                 player.health = player.max_health  # Resetear salud
@@ -373,13 +410,22 @@ def main():
             for npc in level_data["npcs"]:
              
                 npc.update(level_data["collision_rects"])
-                screen.blit(npc.image, level_data["camera"].apply(npc.rect))
+                npc_screen_rect = level_data["camera"].apply(npc.rect)
+                screen.blit(npc.image, npc_screen_rect)
+
+                # Dibujar signo de interrogación (usa rects globales, NO ajustados)
+                npc.draw_question_mark(screen, player.rect, level_data["camera"])
+
             
             for enemy in level_data["enemies"]:
                 screen.blit(enemy.image, level_data["camera"].apply(enemy.rect))
 
                 if isinstance(enemy, MiniBoss):
                     enemy.draw_health_bar(screen, level_data["camera"])
+                    for bp in enemy.projectiles:
+                        screen.blit(bp.image, level_data["camera"].apply(bp.rect))    
+                  
+        
                 
             for cons in level_data["consumables"]:
                 screen.blit(cons.image, level_data["camera"].apply(cons.rect))
@@ -390,7 +436,11 @@ def main():
                 
             if player.attack_rect:
                 attack_rect_camera = level_data["camera"].apply(player.attack_rect)
-                pygame.draw.rect(screen, (255, 0, 0), attack_rect_camera, 2)
+                crosshair_pos = (
+                   attack_rect_camera.centerx - player.crosshair_image.get_width() // 2,
+                   attack_rect_camera.centery - player.crosshair_image.get_height() // 2
+                )
+                screen.blit(player.crosshair_image, crosshair_pos)
                 
         elif not player.death_animation_finished:
             draw_tiled_map(screen, level_data["tmx_data"], 
@@ -412,7 +462,7 @@ def main():
 
         hud.draw(screen)
         pygame.display.flip()
-        clock.tick(60)
+        clock.tick(60)  
 
     pygame.quit()
 

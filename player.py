@@ -9,6 +9,9 @@ class Player(pygame.sprite.Sprite):
 
         if all_sounds is None:
             all_sounds = []
+            
+        self.crosshair_image = pygame.image.load("assets/ui/crosshair.png").convert_alpha()
+        self.crosshair_image = pygame.transform.scale(self.crosshair_image, (32, 32))  # ajusta tamaño    
 
         # Diccionario de animaciones
 
@@ -162,7 +165,7 @@ class Player(pygame.sprite.Sprite):
         # Colisiones con enemigos
         hits = pygame.sprite.spritecollide(self, enemy_group, False)
         for enemy in hits:
-            damage = getattr(enemy, "damage", 10)
+            damage = getattr(enemy, "damage", 15)
             self.take_damage(damage)
 
         # Movimiento horizontal y colisiones

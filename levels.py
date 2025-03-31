@@ -115,7 +115,7 @@ LEVEL_CONFIG = {
     },
     "level5": {
         "map": "assets/tilemaps/level1_5.tmx",
-        "music": "assets/audio/game/level3_music.mp3",
+        "music": "assets/audio/game/level5_music.mp3",
         "spawn_dialogue": [
             {"speaker": "Protagonista",
              "text": "Oye, Athelia, ¿cómo es que llegamos a un cementerio?"},
@@ -137,6 +137,44 @@ LEVEL_CONFIG = {
              "text": "Quizás. Pero algo me dice que no todos aquí están realmente descansando."}
         ],
         "next_level": "level6"
+    },
+    "level6": {
+        "map": "assets/tilemaps/level1_6.tmx",
+        "music": "assets/audio/game/level6_music.mp3",   
+        "spawn_dialogue": [
+            {
+                "speaker": "Protagonista",
+                "text": " ¿...?"
+            },
+            {
+                "speaker": "Athelia",
+                "text": "No puede ser... Esto no estaba en nuestras visiones. Algo ha despertado antes de tiempo."
+            },
+            {
+                "speaker": "Protagonista",
+                "text": "Esto no debería estar pasando. Todo el ambiente cambió apenas cruzamos esa puerta."
+            },
+            {
+                "speaker": "Athelia",
+                "text": "Hay algo oscuro detrás... Lo siento en cada fibra de mi cuerpo. Como si la sombra misma respirara desde ahí."
+            },
+            {
+                "speaker": "Protagonista",
+                "text": "¿Crees que... la dama Lysverion este bien?"
+            },
+            {
+                "speaker": "Athelia",
+                "text": "Es posible... pero incluso si está ahí, no sabemos en qué es eso. Nadie ha cruzado ese umbral y regresado igual."
+            },
+            {
+                "speaker": "Protagonista",
+                "text": "Entonces, no hay vuelta atrás. Vamos a descubrir qué se oculta tras esa oscuridad."
+            }
+        ],
+
+        "end_dialogue": [
+        ],
+        "next_level": "end"
     },
 
 

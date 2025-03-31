@@ -47,4 +47,4 @@ class HUD:
 
         # Nombre del jugador
         name_surface = self.font.render(game_state.player_name, True, (255, 255, 255))
-        screen.blit(name_surface, (20, 85))
+        screen.blit(name_surface, (20, 105))

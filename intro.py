@@ -2,6 +2,9 @@ import pygame
 from dialog import show_dialog_with_name
 from utils import get_font
 import game_state
+from screens import show_menu  # Asegúrate de tener esto importado
+import os
+import sys
 
 # Configuración de botones del joystick
 JOYSTICK_BUTTONS = {
@@ -296,14 +299,14 @@ def show_intro_scenes(screen):
 
     # --- Escenas tras la elección ---
     post_choice_scenes = [
-        { "image": "assets/intro/scene12.png", "speaker": "Narrador", "dialogue": "El hermano elegido por el jugador se aferra a la vida.", "duration": None },
-        { "image": "assets/intro/scene12.png", "speaker": "Narrador", "dialogue": "El otro... se enfrenta directamente a Umbra.", "duration": None },
-        { "image": "assets/intro/scene13.png", "speaker": "Narrador", "dialogue": "Un estallido de energía elemental rompe los muros. La torre colapsa.", "duration": None },
-        { "image": "assets/intro/scene14.png", "speaker": "Narrador", "dialogue": "El hermano no elegido desaparece entre el caos y las sombras.", "duration": None },
-        { "image": "assets/intro/scene15.png", "speaker": "Narrador", "dialogue": "El hermano restante lucha. Pero es inútil.", "duration": None },
-        { "image": "assets/intro/scene16.png", "speaker": "Narrador", "dialogue": "Un golpe brutal lo arroja contra las ruinas. Su mundo se desmorona.", "duration": None },
-        { "image": "assets/intro/scene17.png", "speaker": "Narrador", "dialogue": f"{game_state.player_name} siente cómo su conciencia se apaga lentamente.", "duration": None },
-        { "image": "assets/intro/scene17.png", "speaker": "Narrador", "dialogue": "El tiempo deja de existir...", "duration": None },
+       { "image": "assets/intro/scene12.png", "speaker": "Narrador", "dialogue": "El hermano elegido por el jugador se aferra a la vida.", "duration": None },
+       { "image": "assets/intro/scene12.png", "speaker": "Narrador", "dialogue": "El otro... se enfrenta directamente a Umbra.", "duration": None },
+      { "image": "assets/intro/scene13.png", "speaker": "Narrador", "dialogue": "Un estallido de energía elemental rompe los muros. La torre colapsa.", "duration": None },
+      { "image": "assets/intro/scene14.png", "speaker": "Narrador", "dialogue": "El hermano no elegido desaparece entre el caos y las sombras.", "duration": None },
+      { "image": "assets/intro/scene15.png", "speaker": "Narrador", "dialogue": "El hermano restante lucha. Pero es inútil.", "duration": None },
+      { "image": "assets/intro/scene16.png", "speaker": "Narrador", "dialogue": "Un golpe brutal lo arroja contra las ruinas. Su mundo se desmorona.", "duration": None },
+      { "image": "assets/intro/scene17.png", "speaker": "Narrador", "dialogue": f"{game_state.player_name} siente cómo su conciencia se apaga lentamente.", "duration": None },
+      { "image": "assets/intro/scene17.png", "speaker": "Narrador", "dialogue": "El tiempo deja de existir...", "duration": None },
     ]
 
     for scene in post_choice_scenes:
@@ -322,11 +325,11 @@ def show_intro_scenes(screen):
 
     # --- Salto temporal de 100 años ---
     post_time_skip_scenes = [
-        { "image": "assets/intro/scene18.png", "speaker": "Narrador", "dialogue": "Silencio. Oscuridad. Un susurro lejano atraviesa el abismo del tiempo.", "duration": None },
-        { "image": "assets/intro/scene18.png", "speaker": "Narrador", "dialogue": "Cien años pasaron desde la caída de la Torre del Alba.", "duration": None },
-        { "image": "assets/intro/scene19.png", "speaker": "Narrador", "dialogue": "La historia de los guardianes se desvaneció como polvo en el viento. El mundo cambió.", "duration": None },
-        { "image": "assets/intro/scene19.png", "speaker": "Narrador", "dialogue": "Los reinos cayeron. Nuevas criaturas caminaron la tierra. Pero una esperanza dormía…", "duration": None },
-        { "image": "assets/intro/scene20.png", "speaker": "Narrador", "dialogue": f"...hasta que los ojos de {game_state.player_name} se abrieron nuevamente.", "duration": None },
+       { "image": "assets/intro/scene18.png", "speaker": "Narrador", "dialogue": "Silencio. Oscuridad. Un susurro lejano atraviesa el abismo del tiempo.", "duration": None },
+       { "image": "assets/intro/scene18.png", "speaker": "Narrador", "dialogue": "Cien años pasaron desde la caída de la Torre del Alba.", "duration": None },
+       { "image": "assets/intro/scene19.png", "speaker": "Narrador", "dialogue": "La historia de los guardianes se desvaneció como polvo en el viento. El mundo cambió.", "duration": None },
+       { "image": "assets/intro/scene19.png", "speaker": "Narrador", "dialogue": "Los reinos cayeron. Nuevas criaturas caminaron la tierra. Pero una esperanza dormía…", "duration": None },
+       { "image": "assets/intro/scene20.png", "speaker": "Narrador", "dialogue": f"...hasta que los ojos de {game_state.player_name} se abrieron nuevamente.", "duration": None },
     ]
 
     for scene in post_time_skip_scenes:
@@ -345,19 +348,19 @@ def show_intro_scenes(screen):
 
     # --- Encuentro con Athelia ---
     extended_intro_scenes = [
-        { "image": "assets/intro/scene21.png", "speaker": "Narrador", "dialogue": f"Al mirar hacia el cielo, {game_state.player_name} y voler a mirar a su alrededor, encuentra con una figura observadora.", "duration": None },
-        { "image": "assets/intro/scene21.png", "speaker": "Narrador", "dialogue": "La figura toma forma: un ser grácil de pelaje azulado, con vetas luminosas y ojos violetas.", "duration": None },
-        { "image": "assets/intro/scene22.png", "speaker": "???", "dialogue": "Te has despertado por fin. Mi nombre es Athelia.", "duration": None },
-        { "image": "assets/intro/scene22.png", "speaker": f"{game_state.player_name}", "dialogue": "¿Dónde... dónde estamos?", "duration": None },
-        { "image": "assets/intro/scene19.png", "speaker": "Athelia", "dialogue": "Esta región se llama Aurumwood. Alguna vez fue parte del reino exterior de Felinaria.", "duration": None },
-        { "image": "assets/intro/scene19.png", "speaker": "Athelia", "dialogue": "Han pasado muchas cosas desde que... desapareciste.", "duration": None },
-        { "image": "assets/intro/scene23.png", "speaker": f"{game_state.player_name}", "dialogue": "Debo encontrar a mi hermano. Y necesito descubrir qué pasó realmente.", "duration": None },
-        { "image": "assets/intro/scene23.png", "speaker": "Athelia", "dialogue": "Lo sé. Por eso estoy aquí. He escuchado rumores... hay rastros de memoria en las ciudades que aún quedan en pie.", "duration": None },
-        { "image": "assets/intro/scene23.png", "speaker": f"{game_state.player_name}", "dialogue": "¿Qué ciudades existen ahora? ¿Y qué pasó con las demás?", "duration": None },
-        { "image": "assets/intro/scene23.png", "speaker": "Athelia", "dialogue": "Existían seis grandes ciudades. Cinco sobrevivieron. La sexta... quedó sepultada en la oscuridad.", "duration": None },
-        { "image": "assets/intro/scene23.png", "speaker": f"{game_state.player_name}", "dialogue": "Debo ir a las ciudades que queden. Tal vez allí encuentre rastros de mi hermano... o de la verdad.", "duration": None },
-        { "image": "assets/intro/scene24.png", "speaker": "Athelia", "dialogue": "Conozco un camino hacia Ludoria, la Ciudad de la Música y los Cristales. Pero deberás tener cuidado.", "duration": None },
-        { "image": "assets/intro/scene25.png", "speaker": "Narrador", "dialogue": f"Y así, tras cien años de silencio, el viaje de {game_state.player_name} comienza de nuevo.", "duration": None },
+      { "image": "assets/intro/scene21.png", "speaker": "Narrador", "dialogue": f"Al mirar hacia el cielo, {game_state.player_name} y voler a mirar a su alrededor, encuentra con una figura observadora.", "duration": None },
+      { "image": "assets/intro/scene21.png", "speaker": "Narrador", "dialogue": "La figura toma forma: un ser grácil de pelaje azulado, con vetas luminosas y ojos violetas.", "duration": None },
+      { "image": "assets/intro/scene22.png", "speaker": "???", "dialogue": "Te has despertado por fin. Mi nombre es Athelia.", "duration": None },
+      { "image": "assets/intro/scene22.png", "speaker": f"{game_state.player_name}", "dialogue": "¿Dónde... dónde estamos?", "duration": None },
+      { "image": "assets/intro/scene19.png", "speaker": "Athelia", "dialogue": "Esta región se llama Aurumwood. Alguna vez fue parte del reino exterior de Felinaria.", "duration": None },
+      { "image": "assets/intro/scene19.png", "speaker": "Athelia", "dialogue": "Han pasado muchas cosas desde que... desapareciste.", "duration": None },
+      { "image": "assets/intro/scene23.png", "speaker": f"{game_state.player_name}", "dialogue": "Debo encontrar a mi hermano. Y necesito descubrir qué pasó realmente.", "duration": None },
+      { "image": "assets/intro/scene23.png", "speaker": "Athelia", "dialogue": "Lo sé. Por eso estoy aquí. He escuchado rumores... hay rastros de memoria en las ciudades que aún quedan en pie.", "duration": None },
+      { "image": "assets/intro/scene23.png", "speaker": f"{game_state.player_name}", "dialogue": "¿Qué ciudades existen ahora? ¿Y qué pasó con las demás?", "duration": None },
+      { "image": "assets/intro/scene23.png", "speaker": "Athelia", "dialogue": "Existían seis grandes ciudades. Cinco sobrevivieron. La sexta... quedó sepultada en la oscuridad.", "duration": None },
+      { "image": "assets/intro/scene23.png", "speaker": f"{game_state.player_name}", "dialogue": "Debo ir a las ciudades que queden. Tal vez allí encuentre rastros de mi hermano... o de la verdad.", "duration": None },
+      { "image": "assets/intro/scene24.png", "speaker": "Athelia", "dialogue": "Conozco un camino hacia Ludoria, la Ciudad de la Música y los Cristales. Pero deberás tener cuidado.", "duration": None },
+      { "image": "assets/intro/scene25.png", "speaker": "Narrador", "dialogue": f"Y así, tras cien años de silencio, el viaje de {game_state.player_name} comienza de nuevo.", "duration": None },
     ]
 
     for scene in extended_intro_scenes:
@@ -375,3 +378,141 @@ def show_intro_scenes(screen):
         show_dialog_with_name(screen, scene["speaker"], dialogue)
 
     return True
+
+
+def fade_to_black(screen, speed=5):
+    fade_surface = pygame.Surface(screen.get_size())
+    fade_surface.fill((0, 0, 0))
+
+    for alpha in range(0, 256, speed):
+        fade_surface.set_alpha(alpha)
+        screen.blit(fade_surface, (0, 0))
+        pygame.display.flip()
+        pygame.time.delay(30)
+
+
+
+
+def show_final_cinematic(screen):
+    from screens import show_menu  # Si no está ya importado arriba
+    from main import BACKGROUND_IMAGE  # Ruta para el fondo del menú principal
+    
+    
+    fade_to_black(screen)
+
+    # Música para la cinemática
+    fade_music("assets/audio/game/final_cinematic.mp3", 2000)
+
+    scenes = [
+     { "image": "assets/intro/scene26.png", "speaker": "Protagonista", "dialogue": "Es... demasiado fuerte. Mi energía no es suficiente para derrotarlo...", "duration": None },
+     { "image": "assets/intro/scene27.png", "speaker": "Athelia", "dialogue": "Lo siento... Lo siento mucho. No puedo moverme... tengo miedo. Algo en él me paraliza.", "duration": None },
+     { "image": "assets/intro/scene26.png", "speaker": "Narrador", "dialogue": "De pronto, una distorsión oscura rodea al enemigo. Su figura comienza a temblar, como si algo dentro de él se quebrara.", "duration": None },
+     { "image": "assets/intro/scene26.png", "speaker": "???", "dialogue": "*ʐ̨̼̜ʄ͎͕͔̼̙̰͚ᵭ̶̠̯͍̮͚̝ ͎͙͉͚͜ɯ̖͎̠̞͈̭͖̗̰ʂ̴̼͙̩͙͓...*", "duration": None },
+     { "image": "assets/intro/scene28.png", "speaker": "Narrador", "dialogue": "Sin razón aparente, el enemigo detiene su ataque. La corrupción lo envuelve por completo... y desaparece en la nada.", "duration": None },
+     { "image": "assets/intro/scene28.png", "speaker": "Protagonista", "dialogue": "¿Qué... fue eso?", "duration": None },
+     { "image": "assets/intro/scene28.png", "speaker": "Athelia", "dialogue": "No lo sé. Algo más poderoso que nosotros lo alejó... y no creo que haya sido por compasión.", "duration": None },
+     { "image": "assets/intro/scene29.png", "speaker": "???", "dialogue": "*Heheheh... sigues con vida... hermano.*", "duration": None }
+    ]
+
+
+    for scene in scenes:
+        try:
+            image = pygame.image.load(scene["image"]).convert()
+        except Exception as e:
+            print(f"Error al cargar escena final: {scene['image']}", e)
+            continue
+
+        image = pygame.transform.scale(image, screen.get_size())
+        screen.blit(image, (0, 0))
+        pygame.display.flip()
+        show_dialog_with_name(screen, scene["speaker"], scene["dialogue"])
+
+    # Música para créditos
+    fade_music("assets/audio/menu/credits_theme.mp3", 2000)
+
+    # Mostrar créditos
+    show_credits(screen)
+    pygame.quit()
+    os.execl(sys.executable, sys.executable, *sys.argv)
+    # Volver al menú principal
+    background = pygame.transform.scale(pygame.image.load(BACKGROUND_IMAGE).convert(), screen.get_size())
+    show_menu(screen, background, music_volume=0.5, effects_volume=0.5, all_sounds=[])
+
+def show_credits(screen):
+    font = get_font(24)
+    clock = pygame.time.Clock()
+
+    credits = [
+     "UNMEI GISEI",
+     "",
+     "Una historia de destino y sacrificio",
+     "",
+     "Programación:",
+     "Leonardo Ochoa Ravelo",
+     "Germán Pérez Chalanda",
+     "",
+     "Editor de mapas:",
+     "David Francisco Espinoza",
+     "",
+     "Diseño y arte:",
+     "Germán Pérez Chalanda",
+     "Karen Morales Andrade",
+     "Evelin Moreno",
+     "",
+     "Música y efectos:",
+     "Karen Morales",
+     "",
+     "Historia:",
+     "Germán Pérez Chalanda",
+     "",
+     "Gracias por jugar.",
+     "",
+     "© 2025 Unmei Gisei Team"
+    ]
+    
+
+    rendered = [font.render(line, True, (255, 255, 255)) for line in credits]
+    total_height = sum(text.get_height() + 10 for text in rendered)
+    y = screen.get_height()
+
+    background = pygame.Surface(screen.get_size())
+    background.fill((0, 0, 0))
+
+    running = True
+    while running:
+        screen.blit(background, (0, 0))
+        y -= 1  # velocidad del scroll
+
+        current_y = y
+        for text in rendered:
+            x = screen.get_width() // 2 - text.get_width() // 2
+            screen.blit(text, (x, current_y))
+            current_y += text.get_height() + 10
+
+        pygame.display.flip()
+        clock.tick(60)
+
+        if current_y < 0:
+            running = False
+
+        for event in pygame.event.get():
+            if event.type == pygame.QUIT:
+                pygame.quit()
+                exit()
+
+
+def fade_music(new_music, fade_time=2000):
+    import pygame
+    current_music = pygame.mixer.music.get_busy()
+    if current_music:
+        current_volume = pygame.mixer.music.get_volume()
+        for volume in range(int(current_volume * 100), 0, -5):
+            pygame.mixer.music.set_volume(volume / 100)
+            pygame.time.delay(fade_time // 20)
+
+    pygame.mixer.music.load(new_music)
+    pygame.mixer.music.set_volume(0)
+    pygame.mixer.music.play(-1)
+    for volume in range(0, 101, 5):
+        pygame.mixer.music.set_volume(volume / 100)
+        pygame.time.delay(fade_time // 20)

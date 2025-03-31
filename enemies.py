@@ -1,6 +1,7 @@
 import pygame
 import os
 import random
+from boss_projectile import BossProjectile
 class Enemy(pygame.sprite.Sprite):
     def __init__(self, x, y, enemy_type="bandit", speed=2, health=50, damage=15,
                  effects_volume=0.5, all_sounds=None):
@@ -11,13 +12,10 @@ class Enemy(pygame.sprite.Sprite):
         self.damage = damage
         self.max_health = health 
         self.knockback_resistance = 0.8
-
-        
-
+        self.last_damage_time = 0 
         self.stunned = False
         self.stun_duration = 300  # ms
-        self.last_stun_time = 0
-        
+        self.last_stun_time = 0      
         # Estados posibles: "idle", "chase", "attack", "death"
         self.state = "idle"
 
@@ -30,6 +28,7 @@ class Enemy(pygame.sprite.Sprite):
             "run":    self.load_frames(os.path.join(base_path, "run")),
             "attack": self.load_frames(os.path.join(base_path, "attack")),
             "death":  self.load_frames(os.path.join(base_path, "death")),
+            "hurt":   self.load_frames(os.path.join(base_path, "hurt")),
         }
         
         # Control de animación
@@ -39,11 +38,15 @@ class Enemy(pygame.sprite.Sprite):
 
         # Primera imagen (o Surface temporal si falta "idle")
         if self.animations["idle"]:
-            self.image = self.animations["idle"][0]
+            self.original_image = self.animations["idle"][0].copy()
         else:
             self.image = pygame.Surface((32, 64))
             self.image.fill((255, 0, 0))
+            self.original_image = pygame.Surface((32, 64))
+            self.original_image.fill((255, 0, 0))
 
+            
+        self.image = self.original_image.copy()
         self.rect = self.image.get_rect(topleft=(x, y))
 
         # Hitbox para colisiones
@@ -69,6 +72,12 @@ class Enemy(pygame.sprite.Sprite):
         self.damage_sound.set_volume(effects_volume)
         if all_sounds is not None:
             all_sounds.append(self.damage_sound)
+            
+        # Al final de __init__, después de crear la imagen y el rectángulo:
+        self.dead = False
+        self.death_animation_finished = False
+        self.death_start_time = 0
+    
 
     def load_frames(self, folder):
        
@@ -94,26 +103,57 @@ class Enemy(pygame.sprite.Sprite):
         return frames
 
     def update(self, collision_rects, player):
-        # 1) Actualizar estado de stun
+        current_time = pygame.time.get_ticks()
+    
+        # Si el enemigo está muerto, procesamos la animación de muerte y salimos
+        if self.dead:
+            self.handle_death()
+            return
+    
+        # Si el enemigo está en estado "hurt" y aún no se cumplió el tiempo mínimo (500 ms), 
+        # evitamos actualizar la lógica (IA, colisiones, ataques) y solo animamos.
+        if self.state == "hurt" and current_time - self.last_damage_time < 500:
+            if self.stunned:
+                if current_time - self.last_stun_time > self.stun_duration:
+                    self.stunned = False
+                self.velocity.x *= self.knockback_resistance
+            self.animate()
+            return
+        else:
+            # Si el tiempo de "hurt" ya pasó y el estado es "hurt", volvemos a "idle"
+            if self.state == "hurt":
+                self.set_state("idle")
+    
+        # Procesar el estado de stun
         if self.stunned:
-            # Verificar si ha terminado el tiempo de stun
-            if pygame.time.get_ticks() - self.last_stun_time > self.stun_duration:
+            if current_time - self.last_stun_time > self.stun_duration:
                 self.stunned = False
-
-            # Aplicar resistencia al knockback SOLO durante el stun
             self.velocity.x *= self.knockback_resistance
-
-        # 2) Ejecutar lógica solo si no está aturdido y está vivo
+    
+        # Si no está aturdido y no en estado de muerte, se ejecuta la lógica normal
         if not self.stunned and self.state != "death":
-            # Decidir estado
             self.ai_logic(player)
-            # Mover + colisiones
             self.move_and_collide(collision_rects)
-            # Ver ataque
             self.handle_attack(player)
-
-        # 3) Animar siempre (incluso durante stun o muerte)
+    
+        # Se anima siempre (esto actualizará la animación hurt o la normal según corresponda)
         self.animate()
+   
+    def handle_death(self):
+     # Si aún no hemos mostrado todos los frames de la animación de death:
+     if self.current_frame < len(self.animations["death"]) - 1:
+         self.animation_timer += 1
+         if self.animation_timer >= self.animation_speed * 2:  # Puedes ajustar la velocidad
+             self.animation_timer = 0
+             self.current_frame += 1
+             self.image = self.animations["death"][self.current_frame]
+     else:
+         # Una vez finalizada la animación, mantenemos el último frame
+         self.image = self.animations["death"][-1]
+         # Y tras una demora (por ejemplo, 3000 ms), eliminamos al enemigo:
+         if pygame.time.get_ticks() - self.death_start_time >= 3000:
+             self.kill()
+    
 
     def ai_logic(self, player):
       
@@ -196,6 +236,7 @@ class Enemy(pygame.sprite.Sprite):
             if current_time - self.last_attack_time >= self.attack_cooldown:
                 self.set_state("attack")
                 player.take_damage(self.damage, play_sound=False)
+                
                 self.damage_sound.play()
                 self.last_attack_time = current_time
         else:
@@ -204,42 +245,57 @@ class Enemy(pygame.sprite.Sprite):
                 self.set_state("idle")
 
     def animate(self):
-       
+        # Selección de la animación según el estado
         if self.state == "chase":
             frames_list = self.animations.get("run", [])
         else:
             frames_list = self.animations.get(self.state, [])
-
-        # Fallback a 'idle' si no hay animaciones para el estado
+        
         if not frames_list:
             frames_list = self.animations.get("idle", [])
-
+        
         if not frames_list:
             return
-
+    
         self.animation_timer += 1
         if self.animation_timer >= self.animation_speed:
             self.animation_timer = 0
             self.current_frame = (self.current_frame + 1) % len(frames_list)
-
-        self.image = frames_list[self.current_frame]
-
-        # Flip si dirección es izquierda
+    
+        # Actualiza la imagen base del sprite según el frame actual
+        self.original_image = frames_list[self.current_frame].copy()
         if self.direction == -1:
-            self.image = pygame.transform.flip(self.image, True, False)
-
+            self.original_image = pygame.transform.flip(self.original_image, True, False)
+    
+        # Se asigna la imagen base
+        self.image = self.original_image.copy()
+    
+        # Si se ha recibido daño recientemente (menos de 500 ms), se usa la animación "hurt"
+        if pygame.time.get_ticks() - self.last_damage_time < 500:
+            hurt_frames = self.animations.get("hurt", [])
+            if hurt_frames:
+                # Aquí se recorre la animación de hurt; si tienes más de 1 frame, puedes ajustar el avance
+                hurt_sprite = hurt_frames[self.current_frame % len(hurt_frames)].copy()
+                if self.direction == -1:
+                    hurt_sprite = pygame.transform.flip(hurt_sprite, True, False)
+                self.image = hurt_sprite
+            
     def take_damage(self, amount, knockback_direction=0):
+        
+        if self.dead:
+            return  # No recibimos daño si estamos muertos
+
+        
         """Reduce la salud y aplica knockback en una dirección."""
         self.health -= amount
-
+        self.last_damage_time = pygame.time.get_ticks()
+        self.state = "hurt"
         # Aplicar knockback solo si el enemigo sigue vivo
         if self.health > 0:
             horizontal_knockback = 15  # Empuje horizontal
             vertical_knockback = -12    # Fuerza vertical (pequeño salto)
-
             self.velocity.x = horizontal_knockback * knockback_direction
             self.velocity.y = vertical_knockback  # Salto hacia arriba
-
             self.stunned = True  # Nueva variable de estado
             self.last_stun_time = pygame.time.get_ticks()  # Registrar momento del stun
 
@@ -247,7 +303,10 @@ class Enemy(pygame.sprite.Sprite):
         if self.health <= 0:
             self.health = 0
             self.set_state("death")
-            self.kill()
+            self.dead = True
+            self.current_frame = 0
+            self.animation_timer = 0
+            self.death_start_time = pygame.time.get_ticks()
 
 
 class MiniBoss(Enemy):
@@ -263,8 +322,10 @@ class MiniBoss(Enemy):
         self.last_attack_time = 0
         self.special_attack_damage = 45  # Daño de ataque especial
 
-        self.max_health = health  # Opcional: si quieres que sea diferente al health inicial
-        self.health = health * 2 
+        self.max_health = health * 2
+        self.health = self.max_health
+        self.projectiles = pygame.sprite.Group()
+        self.ready_to_remove = False
         
         # Cargar sprites especiales
         self.load_special_sprites()
@@ -274,14 +335,24 @@ class MiniBoss(Enemy):
         self.special_attack_sound.set_volume(effects_volume)
         if all_sounds is not None:
             all_sounds.append(self.special_attack_sound)
+        self.velocity = pygame.math.Vector2(random.choice([-3, 3]), random.choice([-3, 3]))
+        self.gravity = 0  # No gravedad, porque está volando    
 
     def load_special_sprites(self):
-        """Carga animaciones especiales para el jefe"""
-        base_path = f"assets/enemies/{self.type}"
-        self.animations.update({
-            "special_attack": self.load_frames(os.path.join(base_path, "special_attack")),
-            "rage": self.load_frames(os.path.join(base_path, "rage"))
-        })
+      """Solo idle con sprites escalados (64x64)"""
+      base_path = f"assets/enemies/{self.type}"
+      scaled_size = (112, 112)
+      
+      self.animations = {
+          "idle": self.load_frames(os.path.join(base_path, "idle"), scaled_size)
+      }
+
+      if self.animations["idle"]:
+          self.original_image = self.animations["idle"][0].copy()
+          self.image = self.original_image.copy()
+          self.rect = self.image.get_rect(topleft=(self.rect.x, self.rect.y))
+          self.hitbox = self.rect.copy()
+
 
     def ai_logic(self, player):
         """Comportamiento mejorado del jefe"""
@@ -294,22 +365,21 @@ class MiniBoss(Enemy):
                     self.special_attack(player)
 
     def special_attack(self, player):
-        """Ataque especial con área de efecto"""
-        self.set_state("special_attack")
-        self.special_attack_sound.play()
-        
-        # Crear área de daño
-        attack_rect = pygame.Rect(
-            self.rect.centerx - 100,
-            self.rect.centery - 50,
-            200,
-            100
-        )
-        
-        if player.rect.colliderect(attack_rect):
-            player.take_damage(self.special_attack_damage)
-        
-        self.last_attack_time = pygame.time.get_ticks()
+      self.set_state("special_attack")
+      self.special_attack_sound.play()
+
+      cx = self.rect.centerx
+      cy = self.rect.centery
+
+      # Dispara en 4 direcciones (arriba, abajo, izquierda, derecha)
+      directions = [(1, 0), (-1, 0), (0, 1), (0, -1)]
+
+      for dx, dy in directions:
+          projectile = BossProjectile(cx, cy, dx, dy)
+          self.projectiles.add(projectile)
+
+      self.last_attack_time = pygame.time.get_ticks()
+
 
     def draw_health_bar(self, surface, camera):
         """Dibuja una barra de salud mejorada"""
@@ -337,3 +407,113 @@ class MiniBoss(Enemy):
                 self.image = self.animations["rage"][self.current_frame]
                 if self.direction == -1:
                     self.image = pygame.transform.flip(self.image, True, False)
+                    
+    def move_and_collide(self, collision_rects):
+       # Movimiento continuo estilo DVD Logo (sin gravedad)
+       self.hitbox.x += self.velocity.x
+       self.resolve_collisions(collision_rects, "horizontal")
+
+       self.hitbox.y += self.velocity.y
+       self.resolve_collisions(collision_rects, "vertical")
+
+       self.rect.topleft = self.hitbox.topleft
+       
+    def resolve_collisions(self, collision_rects, direction):
+        for rect in collision_rects:
+            if not self.hitbox.colliderect(rect):
+                continue
+
+            if direction == "horizontal":
+                if self.velocity.x > 0:
+                    self.hitbox.right = rect.left
+                else:
+                    self.hitbox.left = rect.right
+                self.velocity.x *= -1  # Invierte la dirección X al colisionar
+
+            elif direction == "vertical":
+                if self.velocity.y > 0:
+                    self.hitbox.bottom = rect.top
+                else:
+                    self.hitbox.top = rect.bottom
+                self.velocity.y *= -1  # Invierte la dirección Y al colisionar
+    def ai_logic(self, player):
+    # No persigue ni se mueve según jugador, movimiento libre.
+        pass
+    
+    def animate(self):
+       """Animación fija usando solo los sprites de idle."""
+       frames_list = self.animations.get("idle", [])
+       
+       if not frames_list:
+           # Si no hay sprites, usa cuadro rojo por defecto.
+           self.original_image = pygame.Surface((32, 64))
+           self.original_image.fill((255, 0, 0))
+           self.image = self.original_image.copy()
+           return
+
+       self.animation_timer += 1
+       if self.animation_timer >= self.animation_speed:
+           self.animation_timer = 0
+           self.current_frame = (self.current_frame + 1) % len(frames_list)
+
+       self.original_image = frames_list[self.current_frame].copy()
+       
+       # Gira la imagen según la dirección horizontal (opcional, según movimiento)
+       if self.velocity.x < 0:
+           self.original_image = pygame.transform.flip(self.original_image, True, False)
+
+       self.image = self.original_image.copy()
+       
+    def load_frames(self, folder, scale=(64, 64)):
+       frames = []
+       if not os.path.isdir(folder):
+           return frames
+
+       files = [f for f in os.listdir(folder) if f.endswith(".png")]
+
+       def get_frame_number(filename):
+           name_part = filename.split('.')[0]
+           last_segment = name_part.split('_')[-1]
+           return int(last_segment)
+
+       files.sort(key=get_frame_number)
+
+       for filename in files:
+           path = os.path.join(folder, filename)
+           image = pygame.image.load(path).convert_alpha()
+           image = pygame.transform.scale(image, scale)  # <-- Escala aquí
+           frames.append(image)
+
+       return frames
+    def update(self, collision_rects, player):
+      super().update(collision_rects, player)
+      
+      if self.dead:
+        return
+      
+      # Lanzar proyectiles cada 3 segundos
+      current_time = pygame.time.get_ticks()
+      if current_time - self.last_attack_time > self.attack_cooldown:
+          self.special_attack(player)
+     
+    def handle_death(self):
+     death_anim = self.animations.get("death", [])
+
+     if not death_anim:
+         self.death_animation_finished = True
+         self.ready_to_remove = True  # Marca para eliminar después
+         return
+
+     if self.current_frame < len(death_anim) - 1:
+         self.animation_timer += 1
+         if self.animation_timer >= self.animation_speed * 2:
+             self.animation_timer = 0
+             self.current_frame += 1
+             self.image = death_anim[self.current_frame]
+     else:
+         self.image = death_anim[-1]
+         if pygame.time.get_ticks() - self.death_start_time >= 3000:
+             self.death_animation_finished = True
+             self.ready_to_remove = True  # Espera a que main lo quite
+
+                  

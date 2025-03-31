@@ -203,7 +203,7 @@
    <properties>
     <property name="enemy_attack" type="int" value="10"/>
     <property name="enemy_health" type="int" value="50"/>
-    <property name="enemy_speed" type="int" value="4"/>
+    <property name="enemy_speed" type="int" value="3"/>
     <property name="enemy_type" value="rat"/>
    </properties>
   </object>
@@ -211,7 +211,7 @@
    <properties>
     <property name="enemy_attack" type="int" value="10"/>
     <property name="enemy_health" type="int" value="50"/>
-    <property name="enemy_speed" type="int" value="4"/>
+    <property name="enemy_speed" type="int" value="3"/>
     <property name="enemy_type" value="rat"/>
    </properties>
   </object>
@@ -219,7 +219,7 @@
    <properties>
     <property name="enemy_attack" type="int" value="10"/>
     <property name="enemy_health" type="int" value="50"/>
-    <property name="enemy_speed" type="int" value="4"/>
+    <property name="enemy_speed" type="int" value="3"/>
     <property name="enemy_type" value="rat"/>
    </properties>
   </object>
@@ -235,7 +235,7 @@
    <properties>
     <property name="enemy_attack" type="int" value="10"/>
     <property name="enemy_health" type="int" value="50"/>
-    <property name="enemy_speed" type="int" value="4"/>
+    <property name="enemy_speed" type="int" value="3"/>
     <property name="enemy_type" value="rat"/>
    </properties>
   </object>
@@ -243,7 +243,7 @@
    <properties>
     <property name="enemy_attack" type="int" value="10"/>
     <property name="enemy_health" type="int" value="50"/>
-    <property name="enemy_speed" type="int" value="4"/>
+    <property name="enemy_speed" type="int" value="3"/>
     <property name="enemy_type" value="rat"/>
    </properties>
   </object>
@@ -251,7 +251,7 @@
    <properties>
     <property name="enemy_attack" type="int" value="10"/>
     <property name="enemy_health" type="int" value="50"/>
-    <property name="enemy_speed" type="int" value="4"/>
+    <property name="enemy_speed" type="int" value="3"/>
     <property name="enemy_type" value="rat"/>
    </properties>
   </object>
@@ -259,7 +259,7 @@
    <properties>
     <property name="enemy_attack" type="int" value="10"/>
     <property name="enemy_health" type="int" value="50"/>
-    <property name="enemy_speed" type="int" value="4"/>
+    <property name="enemy_speed" type="int" value="3"/>
     <property name="enemy_type" value="rat"/>
    </properties>
   </object>
@@ -283,7 +283,7 @@
    <properties>
     <property name="enemy_attack" type="int" value="10"/>
     <property name="enemy_health" type="int" value="50"/>
-    <property name="enemy_speed" type="int" value="4"/>
+    <property name="enemy_speed" type="int" value="3"/>
     <property name="enemy_type" value="rat"/>
    </properties>
   </object>

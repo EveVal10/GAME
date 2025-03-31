@@ -39,6 +39,10 @@ class NPC(pygame.sprite.Sprite):
         self.vel_y = 0
         self.gravity = 0.5
         self.max_fall_speed = 10
+        
+        original_image = pygame.image.load("assets/ui/question.png").convert_alpha()
+        self.question_mark_image = pygame.transform.scale(original_image, (16, 16))  # 16x16 píxeles es un tamaño estándar
+        self.question_mark_offset_y = -20  # Puedes ajustar esto para que aparezca encima de la cabeza
 
         # Cargar animaciones (solo "idle" en este ejemplo)
         base_path = os.path.join("assets", "npcs", npc_type)
@@ -176,3 +180,14 @@ class NPC(pygame.sprite.Sprite):
         self.current_block = 0
         self.current_line = 0
         self.is_talking = False   # Avanza al siguiente bloque
+    
+    def is_player_near(self, player_rect, distance=50):
+        return self.rect.colliderect(player_rect.inflate(distance, distance))
+    
+    def draw_question_mark(self, surface, player_rect, camera):
+       if not self.is_talking and self.is_player_near(player_rect):
+           x = self.rect.centerx - self.question_mark_image.get_width() // 2
+           y = self.rect.top - self.question_mark_image.get_height() - 5
+           screen_pos = camera.apply(pygame.Rect(x, y, 0, 0))
+           surface.blit(self.question_mark_image, screen_pos)
+            

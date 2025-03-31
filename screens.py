@@ -3,6 +3,11 @@ import sys
 import time
 from utils import get_font
 
+
+fullscreen = False
+window_width, window_height = 640, 480  # resolución modo ventana
+display_width, display_height = 640, 480  # resolución para pantalla completa (o puedes obtener la resolución actual)
+
 # Inicialización de Pygame
 pygame.init()
 # Inicialización del joystick
@@ -100,6 +105,8 @@ def show_config_screen(screen, music_volume, effects_volume, all_sounds):
     slider_x = screen.get_width() // 2 - 100
     slider_width = 200
     slider_height = 20
+    
+    global fullscreen
 
     running = True
     while running:
@@ -136,7 +143,12 @@ def show_config_screen(screen, music_volume, effects_volume, all_sounds):
                         music_volume = 0 if music_volume > 0 else 0.5
                         pygame.mixer.music.set_volume(music_volume)
                     elif options[selected_index] == "Pantalla Completa":
-                        pygame.display.toggle_fullscreen()
+                         if not fullscreen:
+                                screen = pygame.display.set_mode((display_width, display_height), pygame.FULLSCREEN)
+                                fullscreen = True
+                         else:
+                                screen = pygame.display.set_mode((window_width, window_height))
+                                fullscreen = False
                     elif options[selected_index] == "Volver":
                         running = False
                 elif event.key == pygame.K_LEFT:
@@ -196,7 +208,12 @@ def show_config_screen(screen, music_volume, effects_volume, all_sounds):
                             music_volume = 0 if music_volume > 0 else 0.5
                             pygame.mixer.music.set_volume(music_volume)
                         elif options[selected_index] == "Pantalla Completa":
-                            pygame.display.toggle_fullscreen()
+                            if not fullscreen:
+                                screen = pygame.display.set_mode((display_width, display_height), pygame.FULLSCREEN)
+                                fullscreen = True
+                            else:
+                                screen = pygame.display.set_mode((window_width, window_height))
+                                fullscreen = False
                         elif options[selected_index] == "Volver":
                             running = False
                     
@@ -390,26 +407,3 @@ def show_pause_menu(screen, background):
             selected_index = handle_joystick_movement(selected_index, len(options))
 
         clock.tick(30)
-
-def main():
-    screen = pygame.display.set_mode((640, 480))
-    pygame.display.set_caption("Unmei Gisei - 640x480")
-
-    # Cargar fondo
-    background = pygame.image.load("assets/screen/background.png").convert()
-    background = pygame.transform.scale(background, (640, 480))
-
-    # Volúmenes iniciales
-    music_volume = 0.5
-    effects_volume = 0.5
-    all_sounds = []  # Lista de efectos de sonido del juego
-
-    # Mostrar menú
-    if not show_menu(screen, background, music_volume, effects_volume, all_sounds):
-        pygame.quit()
-        return
-
-    pygame.quit()
-
-if __name__ == "__main__":
-    main()
