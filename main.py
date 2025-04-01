@@ -158,6 +158,8 @@ def show_full_conversation(npc, screen):
 def main():
     pygame.init()
     pygame.joystick.init()
+    
+    projectile_button_pressed = False
 
     ARCADE_BUTTONS = {
         'JUMP': 3,       # Botón A (típicamente)
@@ -291,10 +293,16 @@ def main():
                         break
                         
             # Disparar proyectil con botón especial (4)
-            if joystick.get_button(ARCADE_BUTTONS['PROJECTILE']) and player.has_energy:
-                direction = 1 if player.last_direction == "right" else -1
-                projectile = EnergyProjectile(player.rect.centerx, player.rect.centery, direction)
-                projectiles.add(projectile)
+            # Verifica si el botón de disparo está presionado
+            if joystick.get_button(ARCADE_BUTTONS['PROJECTILE']):
+                if not projectile_button_pressed and player.has_energy:
+                    direction = 1 if player.last_direction == "right" else -1
+                    projectile = EnergyProjectile(player.rect.centerx, player.rect.centery, direction)
+                    projectiles.add(projectile)
+                    projectile_button_pressed = True
+            else:
+                projectile_button_pressed = False
+
 
         # Actualizaciones
         player.update(level_data["collision_rects"], level_data["enemies"], 
