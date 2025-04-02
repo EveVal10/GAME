@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<map version="1.10" tiledversion="1.11.2" orientation="orthogonal" renderorder="right-down" width="150" height="15" tilewidth="32" tileheight="32" infinite="0" nextlayerid="14" nextobjectid="109">
+<map version="1.10" tiledversion="1.11.2" orientation="orthogonal" renderorder="right-down" width="150" height="15" tilewidth="32" tileheight="32" infinite="0" nextlayerid="15" nextobjectid="127">
  <tileset firstgid="1" source="../tilesets/Suelo.tsx"/>
  <tileset firstgid="73" source="../tilesets/Well.tsx"/>
  <tileset firstgid="79" source="../tilesets/Tannery.tsx"/>
@@ -133,11 +133,75 @@
   <object id="2" x="-144" y="158.667" width="0.666667" height="0.666667"/>
  </objectgroup>
  <objectgroup id="11" name="Enemies">
-  <object id="77" name="Wolf" type="enemy" x="1057.15" y="221.091" width="32" height="32">
+  <object id="77" name="Bandit" type="enemy" x="863.65" y="221.591" width="32" height="32">
    <properties>
-    <property name="enemy_health" type="int" value="100"/>
+    <property name="enemy_attack" type="int" value="15"/>
+    <property name="enemy_health" type="int" value="50"/>
     <property name="enemy_speed" type="int" value="1"/>
-    <property name="enemy_type" value="wolf"/>
+    <property name="enemy_type" value="bandit"/>
+   </properties>
+  </object>
+  <object id="109" name="Bandit" type="enemy" x="1022.36" y="223.591" width="32" height="32">
+   <properties>
+    <property name="enemy_attack" type="int" value="15"/>
+    <property name="enemy_health" type="int" value="50"/>
+    <property name="enemy_speed" type="int" value="1"/>
+    <property name="enemy_type" value="bandit"/>
+   </properties>
+  </object>
+  <object id="110" name="Bandit" type="enemy" x="2268.67" y="33.3333" width="32" height="32">
+   <properties>
+    <property name="enemy_attack" type="int" value="15"/>
+    <property name="enemy_health" type="int" value="50"/>
+    <property name="enemy_speed" type="int" value="1"/>
+    <property name="enemy_type" value="bandit"/>
+   </properties>
+  </object>
+  <object id="114" name="Bandit" type="enemy" x="3770.75" y="32.5" width="32" height="32">
+   <properties>
+    <property name="enemy_attack" type="int" value="15"/>
+    <property name="enemy_health" type="int" value="50"/>
+    <property name="enemy_speed" type="int" value="1"/>
+    <property name="enemy_type" value="bandit"/>
+   </properties>
+  </object>
+  <object id="115" name="Skeleton" type="enemy" x="3366" y="277.667" width="32" height="32">
+   <properties>
+    <property name="enemy_attack" type="int" value="20"/>
+    <property name="enemy_health" type="int" value="100"/>
+    <property name="enemy_speed" type="int" value="2"/>
+    <property name="enemy_type" value="skeleton"/>
+   </properties>
+  </object>
+  <object id="116" name="Skeleton" type="enemy" x="3132" y="366" width="32" height="32">
+   <properties>
+    <property name="enemy_attack" type="int" value="20"/>
+    <property name="enemy_health" type="int" value="100"/>
+    <property name="enemy_speed" type="int" value="2"/>
+    <property name="enemy_type" value="skeleton"/>
+   </properties>
+  </object>
+  <object id="117" name="Skeleton" type="enemy" x="3557.5" y="358.667" width="32" height="32">
+   <properties>
+    <property name="enemy_attack" type="int" value="20"/>
+    <property name="enemy_health" type="int" value="100"/>
+    <property name="enemy_speed" type="int" value="2"/>
+    <property name="enemy_type" value="skeleton"/>
+   </properties>
+  </object>
+ </objectgroup>
+ <objectgroup id="14" name="NPCs">
+  <object id="120" name="David" type="npc" x="2335" y="222.333" width="32" height="32">
+   <properties>
+    <property name="dialogue1" value="¿Tú también lo sientes, verdad? El murmullo que corre entre las raíces..."/>
+    <property name="dialogue2" value="Dicen que Aurumwood está vivo. No como un bosque cualquiera... sino como algo que recuerda."/>
+    <property name="dialogue3" value="Cada hoja que cae lleva el eco de un susurro antiguo. Algunos juran haber escuchado sus propios pensamientos respondidos por los árboles."/>
+    <property name="dialogue4" value="Ten cuidado donde pisas. Aquí no todo lo que parece dormido lo está."/>
+    <property name="dialogue5" value="Hace cien años, este bosque era frontera. Hoy... es santuario y prisión al mismo tiempo."/>
+    <property name="dialogue6" value="¿Tu camino te lleva hacia el corazón de Aurumwood? Entonces procura no desviarte."/>
+    <property name="dialogue7" value="Las sombras no siempre se ocultan en la noche. A veces... brotan a plena luz del día."/>
+    <property name="npc_type" value="david"/>
+    <property name="speaker" value="David"/>
    </properties>
   </object>
  </objectgroup>
@@ -174,11 +238,27 @@
     <property name="pickup_sound" value=""/>
    </properties>
   </object>
-  <object id="107" name="Fish" type="consumable" x="648.667" y="126" width="32" height="32">
+  <object id="107" name="Fish" type="consumable" x="634.667" y="125" width="32" height="32">
    <properties>
     <property name="Type" value="consumable"/>
     <property name="consumable_type" value="fish"/>
     <property name="health_value" type="int" value="50"/>
+    <property name="pickup_sound" value=""/>
+   </properties>
+  </object>
+  <object id="125" name="Energy" type="consumable" x="909.46" y="37.8332" width="32" height="32">
+   <properties>
+    <property name="Type" value="consumable"/>
+    <property name="consumable_type" value="energy_orb"/>
+    <property name="health_value" type="int" value="15"/>
+    <property name="pickup_sound" value=""/>
+   </properties>
+  </object>
+  <object id="126" name="Energy" type="consumable" x="3420.54" y="278.167" width="32" height="32">
+   <properties>
+    <property name="Type" value="consumable"/>
+    <property name="consumable_type" value="energy_orb"/>
+    <property name="health_value" type="int" value="15"/>
     <property name="pickup_sound" value=""/>
    </properties>
   </object>

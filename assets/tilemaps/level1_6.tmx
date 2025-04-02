@@ -1,0 +1,193 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<map version="1.10" tiledversion="1.11.2" orientation="orthogonal" renderorder="right-down" width="42" height="20" tilewidth="32" tileheight="32" infinite="0" nextlayerid="9" nextobjectid="74">
+ <tileset firstgid="1" name="Tilesetv3-resized" tilewidth="32" tileheight="32" tilecount="884" columns="17">
+  <image source="../pixel/Tilesetv3-resized.png" width="544" height="1664"/>
+ </tileset>
+ <layer id="2" name="Fondo" width="42" height="20">
+  <data encoding="csv">
+1610613098,1610613098,1610613098,1610613098,1610613098,1610613098,1610613098,1610613098,1610613098,1610613098,1610613098,1610613098,1610613098,1610613098,1610613098,1610613098,1610613098,1610613098,1610613098,1610613098,1610613098,1610613098,1610613098,1610613098,1610613098,1610613098,1610613098,1610613098,1610613098,1610613098,1610613098,1610613098,1610613098,1610613098,1610613098,1610613098,1610613098,1610613098,1610613098,1610613098,1610613098,1610613098,
+358,359,377,377,377,377,359,360,377,377,377,359,360,377,377,377,377,359,360,377,377,377,377,377,377,377,377,359,377,377,359,360,377,377,377,377,359,377,360,377,377,362,
+358,359,377,377,377,377,377,377,377,377,377,377,377,377,377,377,377,377,377,377,377,377,377,377,377,377,377,377,377,377,377,377,377,377,377,377,377,377,377,377,377,362,
+358,376,377,377,377,377,377,377,377,377,377,377,377,377,377,377,377,377,377,377,377,377,377,377,377,377,377,377,377,377,377,377,377,377,377,377,377,377,377,377,2684354920,362,
+358,377,377,377,377,377,377,377,377,377,377,377,377,377,377,377,377,377,377,377,377,2684354919,377,377,377,377,377,377,377,377,377,377,377,377,377,377,377,377,377,377,377,362,
+358,1610613095,377,377,377,377,377,377,377,377,377,377,377,377,377,377,377,377,377,377,377,2684354920,377,377,377,377,377,377,377,377,377,377,377,377,377,377,377,377,377,377,377,362,
+358,377,377,377,377,377,377,377,377,377,377,377,377,377,377,377,377,377,377,377,377,377,377,377,377,377,377,377,377,377,377,377,377,377,377,377,377,377,377,377,377,362,
+358,377,377,377,377,377,377,377,377,377,275,275,275,377,377,377,377,377,377,377,377,377,377,377,377,377,377,377,377,377,377,377,377,377,377,377,377,377,377,377,2684354920,362,
+358,377,377,377,377,377,377,377,377,377,377,377,377,377,377,377,377,377,377,377,377,2684354919,377,377,377,377,377,377,377,377,377,377,377,377,377,377,377,377,377,377,377,362,
+358,377,377,377,377,377,377,377,377,377,377,377,377,377,377,377,377,377,377,377,377,2684354920,377,377,377,377,377,377,377,377,377,377,377,377,377,377,377,377,377,377,377,362,
+358,1610613096,377,377,377,377,377,377,377,377,377,377,377,377,377,377,377,377,377,377,377,377,377,377,377,377,377,377,377,377,377,377,377,377,377,377,377,377,377,377,377,362,
+358,1610613095,377,377,377,377,377,377,377,377,377,377,377,377,377,377,377,377,377,377,377,377,377,377,377,377,377,377,377,377,377,377,377,377,377,377,377,377,377,377,2684354920,362,
+358,377,377,377,377,377,377,377,377,377,377,377,377,377,377,377,377,377,377,377,377,377,377,377,377,377,377,377,377,377,377,377,377,377,377,377,377,377,377,377,377,362,
+358,376,377,377,377,377,377,377,377,377,377,377,377,377,377,377,377,377,377,377,377,377,377,377,377,377,377,377,377,377,377,377,377,377,377,377,377,377,377,377,377,362,
+358,377,377,377,377,377,377,377,377,377,377,377,377,377,377,377,377,377,377,377,377,377,377,377,377,377,377,377,377,377,377,377,377,377,377,377,377,377,377,377,377,362,
+358,377,377,377,377,377,377,377,377,377,377,377,377,377,377,377,377,377,377,377,377,377,377,377,377,377,377,377,377,377,377,377,377,377,377,377,377,377,377,377,377,362,
+358,377,377,377,377,377,377,377,377,377,377,377,377,377,377,377,377,377,377,377,377,377,377,377,377,377,377,377,377,377,377,377,377,377,377,377,377,377,377,377,2684354920,362,
+358,1610613095,377,377,377,377,377,377,377,377,377,377,377,377,377,377,377,377,377,377,377,377,377,377,377,377,377,377,377,377,377,377,377,377,377,377,377,377,377,377,377,362,
+358,377,377,377,377,377,377,377,377,377,377,377,377,377,377,377,377,377,377,377,377,377,377,377,377,377,377,377,377,377,377,377,377,377,377,377,377,377,377,377,377,362,
+358,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,362
+</data>
+ </layer>
+ <layer id="3" name="Suelo" width="42" height="20">
+  <data encoding="csv">
+0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
+0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
+0,0,377,377,377,377,377,377,377,377,377,377,377,377,377,377,377,377,377,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
+0,0,377,377,0,0,0,0,0,0,0,0,0,0,0,0,0,0,377,377,377,377,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
+0,0,0,145,145,145,145,0,0,0,0,377,0,0,0,0,0,0,0,0,0,377,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
+0,0,0,0,377,377,0,0,0,0,0,377,145,0,0,144,145,146,0,0,0,377,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
+0,0,0,0,0,377,377,377,0,0,0,0,0,0,0,0,0,0,0,0,0,377,0,0,0,145,145,145,145,0,0,0,0,0,0,0,0,0,0,0,0,0,
+0,0,0,0,0,0,0,377,0,145,0,0,0,0,0,0,0,0,0,0,377,377,377,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
+0,0,0,0,0,0,377,377,0,0,0,0,0,0,0,0,0,0,377,377,377,377,377,0,0,0,0,0,0,0,0,0,0,0,0,145,0,0,0,0,0,0,
+0,0,0,0,377,377,377,377,377,377,377,377,377,377,377,377,377,377,377,0,377,377,377,0,0,0,0,0,0,0,0,145,145,145,145,145,0,0,0,0,0,0,
+0,0,377,377,145,145,145,145,145,377,377,377,377,377,377,377,0,0,0,0,0,377,377,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
+0,0,0,0,0,377,377,377,377,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,145,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
+0,0,0,0,0,0,377,377,377,0,0,0,0,0,0,0,0,0,0,0,0,145,145,145,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
+0,0,0,0,0,0,377,377,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
+0,0,0,145,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
+0,0,0,0,0,0,0,0,0,0,0,0,0,0,145,145,145,0,0,0,0,0,0,0,0,0,145,145,145,145,0,0,0,0,0,0,0,0,0,0,0,0,
+0,0,0,0,0,0,0,145,145,145,145,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
+0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
+0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
+2684354922,2684354922,2684354922,2684354922,2684354922,2684354922,2684354922,2684354922,2684354922,2684354922,2684354922,2684354922,2684354922,2684354922,2684354922,2684354922,2684354922,2684354922,2684354922,2684354922,2684354922,2684354922,2684354922,2684354922,2684354922,2684354922,2684354922,2684354922,2684354922,2684354922,2684354922,2684354922,2684354922,2684354922,2684354922,2684354922,2684354922,2684354922,2684354922,2684354922,2684354922,2684354922
+</data>
+ </layer>
+ <objectgroup id="4" name="PlayerSpawn">
+  <object id="1" name="PlayerSpawn" x="136" y="552" width="32" height="32"/>
+ </objectgroup>
+ <objectgroup id="5" name="Consumables">
+  <object id="31" name="Fish" type="consumable" x="288.5" y="89.5" width="32" height="32">
+   <properties>
+    <property name="Type" value="consumable"/>
+    <property name="consumable_type" value="fish"/>
+    <property name="health_value" type="int" value="50"/>
+    <property name="pickup_sound" value=""/>
+   </properties>
+  </object>
+  <object id="32" name="Fish" type="consumable" x="97" y="396" width="32" height="32">
+   <properties>
+    <property name="Type" value="consumable"/>
+    <property name="consumable_type" value="fish"/>
+    <property name="health_value" type="int" value="50"/>
+    <property name="pickup_sound" value=""/>
+   </properties>
+  </object>
+  <object id="38" name="Energy" type="consumable" x="57" y="84" width="32" height="32">
+   <properties>
+    <property name="Type" value="consumable"/>
+    <property name="consumable_type" value="energy_orb"/>
+    <property name="health_value" type="int" value="15"/>
+    <property name="pickup_sound" value=""/>
+   </properties>
+  </object>
+  <object id="40" name="Energy" type="consumable" x="1051" y="104" width="32" height="32">
+   <properties>
+    <property name="Type" value="consumable"/>
+    <property name="consumable_type" value="energy_orb"/>
+    <property name="health_value" type="int" value="15"/>
+    <property name="pickup_sound" value=""/>
+   </properties>
+  </object>
+  <object id="41" name="Energy" type="consumable" x="1240" y="552" width="32" height="32">
+   <properties>
+    <property name="Type" value="consumable"/>
+    <property name="consumable_type" value="energy_orb"/>
+    <property name="health_value" type="int" value="15"/>
+    <property name="pickup_sound" value=""/>
+   </properties>
+  </object>
+  <object id="42" name="Energy" type="consumable" x="60" y="558" width="32" height="32">
+   <properties>
+    <property name="Type" value="consumable"/>
+    <property name="consumable_type" value="energy_orb"/>
+    <property name="health_value" type="int" value="15"/>
+    <property name="pickup_sound" value=""/>
+   </properties>
+  </object>
+  <object id="43" name="Fish" type="consumable" x="1050" y="236" width="32" height="32">
+   <properties>
+    <property name="Type" value="consumable"/>
+    <property name="consumable_type" value="fish"/>
+    <property name="health_value" type="int" value="50"/>
+    <property name="pickup_sound" value=""/>
+   </properties>
+  </object>
+  <object id="46" name="Fish" type="consumable" x="186.667" y="264" width="32" height="32">
+   <properties>
+    <property name="Type" value="consumable"/>
+    <property name="consumable_type" value="fish"/>
+    <property name="health_value" type="int" value="50"/>
+    <property name="pickup_sound" value=""/>
+   </properties>
+  </object>
+  <object id="72" name="Fish" type="consumable" x="759" y="533" width="32" height="32">
+   <properties>
+    <property name="Type" value="consumable"/>
+    <property name="consumable_type" value="fish"/>
+    <property name="health_value" type="int" value="50"/>
+    <property name="pickup_sound" value=""/>
+   </properties>
+  </object>
+ </objectgroup>
+ <objectgroup id="6" name="Enemies">
+  <object id="33" name="Skeleton" type="enemy" x="510.333" y="106.667" width="32" height="32">
+   <properties>
+    <property name="enemy_attack" type="int" value="20"/>
+    <property name="enemy_health" type="int" value="100"/>
+    <property name="enemy_speed" type="int" value="2"/>
+    <property name="enemy_type" value="skeleton"/>
+   </properties>
+  </object>
+  <object id="34" name="Skeleton" type="enemy" x="876.333" y="404" width="32" height="32">
+   <properties>
+    <property name="enemy_attack" type="int" value="20"/>
+    <property name="enemy_health" type="int" value="100"/>
+    <property name="enemy_speed" type="int" value="2"/>
+    <property name="enemy_type" value="skeleton"/>
+   </properties>
+  </object>
+  <object id="37" name="Noctyrax" type="enemy" x="1088.67" y="412" width="79" height="120">
+   <properties>
+    <property name="enemy_attack" type="int" value="50"/>
+    <property name="enemy_health" type="int" value="500"/>
+    <property name="enemy_speed" type="int" value="2"/>
+    <property name="enemy_type" value="noct"/>
+   </properties>
+  </object>
+  <object id="70" name="Skeleton" type="enemy" x="144" y="61" width="32" height="32">
+   <properties>
+    <property name="enemy_attack" type="int" value="20"/>
+    <property name="enemy_health" type="int" value="100"/>
+    <property name="enemy_speed" type="int" value="2"/>
+    <property name="enemy_type" value="skeleton"/>
+   </properties>
+  </object>
+  <object id="71" name="Skeleton" type="enemy" x="841" y="122" width="32" height="32">
+   <properties>
+    <property name="enemy_attack" type="int" value="20"/>
+    <property name="enemy_health" type="int" value="100"/>
+    <property name="enemy_speed" type="int" value="2"/>
+    <property name="enemy_type" value="skeleton"/>
+   </properties>
+  </object>
+ </objectgroup>
+ <objectgroup id="8" name="Collisions">
+  <object id="19" name="Collisions" x="0.125" y="607.875" width="1343.91" height="32"/>
+  <object id="20" name="Collisions" x="0" y="0" width="1338.67" height="32"/>
+  <object id="21" name="Collisions" x="1312.13" y="0.125" width="32" height="638"/>
+  <object id="22" name="Collisions" x="0" y="32" width="32" height="608"/>
+  <object id="49" name="Collisions" x="480" y="160" width="96" height="32"/>
+  <object id="51" name="Collisions" x="96" y="128" width="128" height="32"/>
+  <object id="52" name="Collisions" x="128" y="320" width="160" height="32"/>
+  <object id="53" name="Collisions" x="224" y="512" width="128" height="32"/>
+  <object id="54" name="Collisions" x="96" y="448" width="32" height="32"/>
+  <object id="55" name="Collisions" x="448" y="480" width="96" height="32"/>
+  <object id="57" name="Collisions" x="672" y="384" width="96" height="32"/>
+  <object id="58" name="Collisions" x="832" y="481.333" width="128" height="32"/>
+  <object id="59" name="Collisions" x="800" y="192" width="128" height="32"/>
+  <object id="61" name="Collisions" x="992" y="288" width="160" height="32"/>
+  <object id="62" name="Collisions" x="1120" y="256" width="32" height="32"/>
+  <object id="66" name="Collisions" x="288" y="224" width="32" height="32"/>
+  <object id="67" name="Collsions" x="384" y="160" width="32" height="32"/>
+  <object id="68" name="Collisions" x="864" y="352" width="32" height="32"/>
+ </objectgroup>
+</map>
